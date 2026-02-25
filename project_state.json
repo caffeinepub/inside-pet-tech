@@ -1,0 +1,157 @@
+{
+  "schemaVersion": "1.0.0",
+  "projectStateVersion": 5,
+  "summary": "A news website called 'Inside Pet Tech' dedicated to the Pet Tech industry. Modeled after Retail Dive, it will feature news stories, articles, interviews, and videos about companies, technology, and ideas reshaping pet care. Includes a strong back-end content moderation system for easy article uploads. Target audience: founders, executives, veterinarians, investors, and operators.",
+  "architectural_notes": [
+    "Site should follow an editorial news layout inspired by Retail Dive",
+    "Content management system needed for back-end article upload and moderation"
+  ],
+  "known_issues": [],
+  "isFixRequest": false,
+  "existing_features": [
+    {
+      "id": "feature-build-a-public-facing-homepage-modeled-after-retail-dive-s-editorial-layout-it-must-include-a-top-navigation-bar-with-the-inside-pet-tech-logo-and-category-links-a-hero-featured-story-section-showcasing-the-most-recent-featured-article-with-large-image-and-headline-a-latest-news-grid-of-recent-published-articles-thumbnail-category-tag-headline-summary-author-date-a-feature-stories-horizontal-scroll-or-section-a-videos-section-if-video-articles-exist-and-a-footer-with-site-description-category-links-and-tagline-covering-the-companies-technology-and-ideas-reshaping-pet-care",
+      "title": "Build a public-facing homepage modeled after Retail Dive's editorial layout. It must include: a top navigation bar with the Inside Pet Tech logo and category links, a hero/featured story section showcasing the most recent featured article with large image and headline, a 'Latest News' grid of recent published articles (thumbnail, category tag, headline, summary, author, date), a 'Feature Stories' horizontal scroll or section, a 'Videos' section if video articles exist, and a footer with site description, category links, and tagline 'Covering the Companies, Technology, and Ideas Reshaping Pet Care'.",
+      "reqIds": [
+        "REQ-3"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-create-individual-category-pages-for-each-of-the-six-categories-startups-funding-ai-data-veterinary-tech-connected-devices-market-trends-and-interviews-each-page-shows-a-filterable-list-of-published-articles-in-that-category-with-thumbnail-headline-summary-author-and-date",
+      "title": "Create individual category pages for each of the six categories: Startups & Funding, AI & Data, Veterinary Tech, Connected Devices, Market Trends, and Interviews. Each page shows a filterable list of published articles in that category with thumbnail, headline, summary, author, and date.",
+      "reqIds": [
+        "REQ-4"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-build-a-full-article-detail-page-it-must-display-the-article-headline-author-published-date-category-tag-content-type-badge-article-feature-story-interview-video-hero-image-or-embedded-video-player-for-video-type-and-full-body-content-include-a-related-articles-section-at-the-bottom-showing-3-articles-from-the-same-category",
+      "title": "Build a full article detail page. It must display: the article headline, author, published date, category tag, content type badge (Article / Feature Story / Interview / Video), hero image or embedded video player (for Video type), and full body content. Include a 'Related Articles' section at the bottom showing 3 articles from the same category.",
+      "reqIds": [
+        "REQ-5"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-build-an-admin-dashboard-at-admin-protected-by-internet-identity-login-the-dashboard-must-include-an-article-list-table-showing-all-articles-all-statuses-with-columns-for-title-category-contenttype-status-publishedat-and-action-buttons-edit-publish-archive-delete-a-create-new-article-form-and-an-article-editor-form-with-all-fields-including-a-rich-text-body-editor-featured-toggle-status-selector-and-thumbnail-url-input",
+      "title": "Build an admin dashboard at /admin, protected by Internet Identity login. The dashboard must include: an article list table showing all articles (all statuses) with columns for title, category, contentType, status, publishedAt, and action buttons (Edit, Publish, Archive, Delete); a 'Create New Article' form; and an article editor form with all fields including a rich text body editor, featured toggle, status selector, and thumbnail URL input.",
+      "reqIds": [
+        "REQ-6"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-apply-a-consistent-editorial-visual-theme-across-the-entire-site-inspired-by-the-inside-pet-tech-brand-use-the-logo-s-gradient-palette-deep-crimson-to-indigo-as-accent-colors-against-a-clean-off-white-light-gray-background-with-dark-near-black-text-typography-should-use-a-bold-serif-or-semi-serif-for-headlines-and-a-clean-sans-serif-for-body-text-layout-should-feel-authoritative-and-editorial-similar-to-a-professional-b2b-trade-publication-apply-this-theme-consistently-to-navigation-cards-category-tags-buttons-and-the-admin-dashboard",
+      "title": "Apply a consistent editorial visual theme across the entire site inspired by the Inside Pet Tech brand. Use the logo's gradient palette (deep crimson-to-indigo) as accent colors against a clean off-white/light gray background with dark near-black text. Typography should use a bold serif or semi-serif for headlines and a clean sans-serif for body text. Layout should feel authoritative and editorial — similar to a professional B2B trade publication. Apply this theme consistently to navigation, cards, category tags, buttons, and the admin dashboard.",
+      "reqIds": [
+        "REQ-7"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-render-the-inside-pet-tech-logo-uploaded-by-the-user-as-a-static-asset-at-frontend-public-assets-generated-inside-pet-tech-logo-png-and-use-it-in-the-site-navbar-and-any-other-appropriate-branding-locations",
+      "title": "Render the Inside Pet Tech logo uploaded by the user as a static asset at frontend/public/assets/generated/inside-pet-tech-logo.png and use it in the site navbar and any other appropriate branding locations.",
+      "reqIds": [
+        "REQ-8"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-replace-the-top-hero-video-section-on-the-homepage-with-a-generic-featured-article-section-instead-of-only-displaying-video-content-types-it-should-display-the-most-recent-featured-article-regardless-of-content-type-article-feature-story-interview-or-video-the-section-should-show-the-article-s-thumbnail-image-category-tag-headline-summary-author-and-published-date-in-a-large-editorial-hero-layout-if-the-featured-article-is-of-type-video-the-thumbnail-should-still-be-used-no-forced-video-embed-at-the-top",
+      "title": "Replace the top hero/video section on the homepage with a generic featured article section. Instead of only displaying video content types, it should display the most recent featured article regardless of content type (Article, Feature Story, Interview, or Video). The section should show the article's thumbnail image, category tag, headline, summary, author, and published date in a large editorial hero layout. If the featured article is of type Video, the thumbnail should still be used (no forced video embed at the top).",
+      "reqIds": [
+        "REQ-10"
+      ],
+      "version": 1
+    }
+  ],
+  "new_feature_requests": [
+    {
+      "id": "AR-1",
+      "summary": "Feature stories and articles section covering pet tech industry",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-2",
+      "summary": "Interviews section with industry executives and thought leaders",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-3",
+      "summary": "Video content section",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-4",
+      "summary": "Back-end content management and moderation system for uploading and managing articles",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-5",
+      "summary": "Homepage with editorial layout similar to Retail Dive, featuring latest news and featured stories",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-6",
+      "summary": "Category pages covering topics: startups/funding, AI/data, veterinary tech, connected devices, market trends",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-7",
+      "summary": "Create a backend data model and actor with full CRUD operations for Articles. Each article must have: id, title, slug, summary, body (rich text), author, category (enum: Startups & Funding | AI & Data | Veterinary Tech | Connected Devices | Market Trends | Interviews | Videos), contentType (enum: Article | Feature Story | Interview | Video), thumbnailUrl, videoUrl (optional), publishedAt (timestamp), status (Draft | Published | Archived), and featured (bool) fields.",
+      "reqIds": [
+        "REQ-1"
+      ],
+      "status": "pending"
+    },
+    {
+      "id": "AR-8",
+      "summary": "Build a backend admin authentication system using Internet Identity. Admin-only functions (create, update, delete, publish, archive articles) must verify the caller is an authorized principal. Provide a function to add/remove admin principals.",
+      "reqIds": [
+        "REQ-2"
+      ],
+      "status": "pending"
+    },
+    {
+      "id": "AR-15",
+      "summary": "Seed the backend with at least 6 sample published articles spanning all categories and content types (articles, feature story, interview, video) so the homepage and category pages render populated content on first load.",
+      "reqIds": [
+        "REQ-9"
+      ],
+      "status": "pending"
+    },
+    {
+      "id": "AR-16",
+      "summary": "Change the top hero/video section on the homepage to a generic featured article section, not restricted to video content types — any featured article can appear there.",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-18",
+      "summary": "Ensure the backend Motoko actor fully supports all admin operations required by the admin dashboard: create, update, delete, publish, and archive articles. Verify that role-based access control (admin principal checks) is enforced on all mutating operations. Expose a function to add and remove admin principals. All operations must be callable from the frontend via the generated actor interface.",
+      "reqIds": [
+        "REQ-11"
+      ],
+      "status": "pending"
+    },
+    {
+      "id": "AR-19",
+      "summary": "Seed the backend with at least 6 sample published articles spanning all categories (Startups & Funding, AI & Data, Veterinary Tech, Connected Devices, Market Trends, Interviews) and content types (Article, Feature Story, Interview, Video). At least one article must have the 'featured' flag set to true so the homepage hero section renders populated content on first load. Sample data should include realistic pet tech industry titles, summaries, authors, thumbnail URLs, and published timestamps.",
+      "reqIds": [
+        "REQ-12"
+      ],
+      "status": "pending"
+    }
+  ],
+  "gameProjectType": "none",
+  "projectName": "Inside Pet Tech",
+  "clarification_mode": "instant",
+  "clarification_rounds": 0
+}

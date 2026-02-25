@@ -1,0 +1,84 @@
+{
+  "kind": "build_request",
+  "title": "Replace hero video section with featured article section & expand backend",
+  "projectName": "Inside Pet Tech",
+  "priority": "normal",
+  "requirements": [
+    {
+      "id": "REQ-10",
+      "text": "Replace the top hero/video section on the homepage with a generic featured article section. Instead of only displaying video content types, it should display the most recent featured article regardless of content type (Article, Feature Story, Interview, or Video). The section should show the article's thumbnail image, category tag, headline, summary, author, and published date in a large editorial hero layout. If the featured article is of type Video, the thumbnail should still be used (no forced video embed at the top).",
+      "target": "frontend",
+      "source": {
+        "messageIds": [
+          "msg-1"
+        ],
+        "quotes": [
+          "Let's have the big Video at the top, changed to a more feature article type section. That way we are constricted to have video there."
+        ]
+      },
+      "acceptanceCriteria": [
+        "The top hero section on the homepage renders any featured article, not only video content types.",
+        "The hero section displays the featured article's thumbnail image, category tag, headline, summary, author, and date.",
+        "A published featured article of type Article, Feature Story, or Interview appears correctly in the hero section.",
+        "The section no longer forces or requires a video embed at the top of the homepage.",
+        "The layout remains large, prominent, and editorial in style consistent with the existing theme."
+      ]
+    },
+    {
+      "id": "REQ-11",
+      "text": "Ensure the backend Motoko actor fully supports all admin operations required by the admin dashboard: create, update, delete, publish, and archive articles. Verify that role-based access control (admin principal checks) is enforced on all mutating operations. Expose a function to add and remove admin principals. All operations must be callable from the frontend via the generated actor interface.",
+      "target": "backend",
+      "source": {
+        "messageIds": [
+          "msg-1"
+        ],
+        "quotes": [
+          "After that, yes let's continue building out the backend"
+        ]
+      },
+      "acceptanceCriteria": [
+        "Admin-only functions (create, update, delete, publish, archive) reject calls from non-admin principals with an error.",
+        "A function exists to add a principal to the admin list, callable only by existing admins.",
+        "A function exists to remove a principal from the admin list, callable only by existing admins.",
+        "All CRUD operations for articles are fully implemented and return appropriate results.",
+        "The backend compiles and deploys without errors."
+      ]
+    },
+    {
+      "id": "REQ-12",
+      "text": "Seed the backend with at least 6 sample published articles spanning all categories (Startups & Funding, AI & Data, Veterinary Tech, Connected Devices, Market Trends, Interviews) and content types (Article, Feature Story, Interview, Video). At least one article must have the 'featured' flag set to true so the homepage hero section renders populated content on first load. Sample data should include realistic pet tech industry titles, summaries, authors, thumbnail URLs, and published timestamps.",
+      "target": "backend",
+      "source": {
+        "messageIds": [
+          "msg-1"
+        ],
+        "quotes": [
+          "After that, yes let's continue building out the backend"
+        ]
+      },
+      "acceptanceCriteria": [
+        "At least 6 published articles exist in the backend after deployment.",
+        "Articles cover all six categories.",
+        "At least one article of each content type (Article, Feature Story, Interview, Video) is seeded.",
+        "At least one article has featured set to true.",
+        "The homepage hero section displays a featured article on first load without manual admin action.",
+        "The Latest News grid and category pages display populated article cards on first load."
+      ]
+    }
+  ],
+  "constraints": [
+    "Do not modify files under frontend/src/hooks/useInternetIdentity.ts, frontend/src/hooks/useActor.ts, frontend/src/main.tsx, or frontend/src/components/ui.",
+    "All Motoko backend logic must remain in a single actor in backend/main.mo.",
+    "The editorial visual theme (crimson-to-indigo gradient, serif headlines, off-white background) must be preserved in any frontend changes."
+  ],
+  "nonGoals": [
+    "Adding a dedicated video embed or player to the top homepage section.",
+    "Changing the article detail page video embed behavior.",
+    "Redesigning category pages or the footer.",
+    "Adding new content categories beyond the existing six."
+  ],
+  "imageRequirements": {
+    "required": [],
+    "edits": []
+  }
+}

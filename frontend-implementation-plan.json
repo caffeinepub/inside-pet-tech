@@ -1,0 +1,25 @@
+{
+  "kind": "implementation_plan",
+  "version": "1.0",
+  "title": "Replace hero video section with featured article section & expand backend",
+  "requirements": [
+    {
+      "id": "REQ-10",
+      "summary": "Replace the top hero/video section on the homepage with a generic featured article section that displays the most recent featured article regardless of content type in a large editorial hero layout",
+      "acceptanceCriteria": [
+        "The top hero section on the homepage renders any featured article, not only video content types.",
+        "The hero section displays the featured article's thumbnail image, category tag, headline, summary, author, and date.",
+        "A published featured article of type Article, Feature Story, or Interview appears correctly in the hero section.",
+        "The section no longer forces or requires a video embed at the top of the homepage.",
+        "The layout remains large, prominent, and editorial in style consistent with the existing theme."
+      ],
+      "file_operations": [
+        {
+          "path": "frontend/src/pages/HomePage.tsx",
+          "operation": "modify",
+          "description": "Replace the existing hero section that filters for video content types with a new featured article hero section. Use the useFeaturedArticles hook to fetch featured articles and display the most recent one (first in the array). The hero section should render the article's thumbnail image using the existing thumbnailUrl field, display the category tag using the getCategoryLabel and getCategoryGradient utilities, show the headline (title), summary, author, and publishedAt date formatted with formatDate. Maintain the large editorial layout with the crimson-to-indigo gradient theme. Remove any video-specific filtering or embed logic from the top hero section. Link the entire hero section to the article detail page using the article's slug."
+        }
+      ]
+    }
+  ]
+}
