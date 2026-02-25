@@ -1,99 +1,82 @@
-import React from 'react';
-import { useParams } from '@tanstack/react-router';
+import { useParams, Link } from '@tanstack/react-router';
+import { ArrowLeft } from 'lucide-react';
+import ArticleCard from '@/components/articles/ArticleCard';
 import { Skeleton } from '@/components/ui/skeleton';
-import ArticleCard from '../components/articles/ArticleCard';
-import { useGetArticlesByCategory } from '../hooks/useQueries';
-import { Category } from '../backend';
-import {
-  SLUG_TO_CATEGORY,
-  CATEGORY_LABELS,
-  CATEGORY_DESCRIPTORS,
-  CATEGORY_GRADIENT_CLASSES,
-} from '../lib/utils';
+import { useGetArticlesByCategory } from '@/hooks/useQueries';
+import { Category } from '@/backend';
+import { slugToCategory, categoryLabel } from '@/lib/utils';
 
 export default function CategoryPage() {
   const { slug } = useParams({ from: '/public-layout/category/$slug' });
-  const category = SLUG_TO_CATEGORY[slug] as Category | undefined;
+  const category = slugToCategory(slug) as Category;
+  const catLabel = categoryLabel(category);
 
-  const { data: articles = [], isLoading } = useGetArticlesByCategory(
-    category ?? Category.startupsAndFunding
-  );
-
-  if (!category) {
-    return (
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 text-center">
-        <h1 className="text-2xl font-serif font-bold text-foreground mb-2">Category Not Found</h1>
-        <p className="text-muted-foreground">The category you're looking for doesn't exist.</p>
-      </main>
-    );
-  }
-
-  const sortedArticles = [...articles].sort((a, b) => {
-    const aTime = a.publishedAt ? Number(a.publishedAt) : 0;
-    const bTime = b.publishedAt ? Number(b.publishedAt) : 0;
-    return bTime - aTime;
-  });
-
-  const gradientClass = CATEGORY_GRADIENT_CLASSES[category];
+  const { data: articles, isLoading, isError } = useGetArticlesByCategory(category);
 
   return (
-    <main>
-      {/* Category Header */}
-      <div className="bg-foreground text-background">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+    <main className="min-h-screen bg-slate-50">
+      {/* Header */}
+      <div className="bg-slate-900 py-12">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <Link
+            to="/"
+            className="inline-flex items-center gap-2 text-slate-400 hover:text-white text-sm mb-6 transition-colors"
+          >
+            <ArrowLeft className="h-4 w-4" />
+            Back to Home
+          </Link>
           <div className="flex items-center gap-3 mb-3">
-            <span className={`inline-block text-xs font-semibold uppercase tracking-widest text-white px-3 py-1 rounded-sm bg-gradient-to-r ${gradientClass}`}>
-              {CATEGORY_LABELS[category]}
+            <span className="px-3 py-1 bg-crimson-600 text-white text-xs font-semibold uppercase tracking-wider rounded">
+              {catLabel}
             </span>
           </div>
-          <h1 className="text-3xl sm:text-4xl font-serif font-bold text-background mb-3">
-            {CATEGORY_LABELS[category]}
-          </h1>
-          <p className="text-background/60 text-base max-w-2xl">
-            {CATEGORY_DESCRIPTORS[category]}
+          <h1 className="font-display text-4xl font-bold text-white">{catLabel}</h1>
+          <p className="text-slate-400 mt-2 text-lg">
+            The latest coverage on {catLabel.toLowerCase()} in the pet technology industry.
           </p>
         </div>
       </div>
 
-      {/* Articles */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+      {/* Articles Grid */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         {isLoading ? (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {[1, 2, 3, 4, 5, 6].map((i) => (
-              <div key={i} className="bg-card rounded-lg overflow-hidden editorial-shadow">
-                <Skeleton className="aspect-[16/10] w-full" />
-                <div className="p-4 space-y-2">
-                  <Skeleton className="h-3 w-20" />
-                  <Skeleton className="h-5 w-full" />
-                  <Skeleton className="h-4 w-3/4" />
-                  <Skeleton className="h-3 w-24" />
-                </div>
+              <div key={i} className="space-y-3">
+                <Skeleton className="aspect-video w-full rounded-lg" />
+                <Skeleton className="h-4 w-1/3" />
+                <Skeleton className="h-6 w-full" />
+                <Skeleton className="h-4 w-2/3" />
               </div>
             ))}
           </div>
-        ) : sortedArticles.length > 0 ? (
-          <>
-            <p className="text-sm text-muted-foreground mb-6">
-              {sortedArticles.length} article{sortedArticles.length !== 1 ? 's' : ''}
-            </p>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-              {sortedArticles.map((article) => (
-                <ArticleCard key={article.id} article={article} />
-              ))}
-            </div>
-          </>
+        ) : isError ? (
+          <div className="text-center py-16">
+            <p className="text-slate-500 font-display text-xl">Failed to load articles.</p>
+            <p className="text-slate-400 text-sm mt-2">Please try again later.</p>
+          </div>
+        ) : articles && articles.length > 0 ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {articles.map((article) => (
+              <ArticleCard key={article.id} article={article} variant="default" />
+            ))}
+          </div>
         ) : (
-          <div className="text-center py-20">
-            <div className={`inline-flex w-16 h-16 rounded-full bg-gradient-to-br ${gradientClass} items-center justify-center mb-4`}>
-              <span className="text-2xl">📰</span>
-            </div>
-            <h2 className="text-xl font-serif font-bold text-foreground mb-2">No Articles Yet</h2>
-            <p className="text-muted-foreground max-w-sm mx-auto">
-              We're working on coverage for {CATEGORY_LABELS[category]}. Check back soon.
+          <div className="text-center py-16">
+            <p className="font-display text-2xl text-slate-700 mb-3">No articles yet</p>
+            <p className="text-slate-500 text-sm">
+              We're working on bringing you the latest {catLabel} coverage. Check back soon.
             </p>
+            <Link
+              to="/"
+              className="inline-flex items-center gap-2 mt-6 text-crimson-600 hover:text-crimson-700 font-medium text-sm"
+            >
+              <ArrowLeft className="h-4 w-4" />
+              Back to Home
+            </Link>
           </div>
         )}
-      </section>
+      </div>
     </main>
   );
 }

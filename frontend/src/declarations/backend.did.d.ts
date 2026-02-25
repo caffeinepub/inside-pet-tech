@@ -75,6 +75,7 @@ export interface _SERVICE {
   'addAdminPrincipal' : ActorMethod<[Principal], undefined>,
   'archiveArticle' : ActorMethod<[string], undefined>,
   'assignCallerUserRole' : ActorMethod<[Principal, UserRole], undefined>,
+  'claimInitialAdmin' : ActorMethod<[], boolean>,
   'createArticle' : ActorMethod<[Article], undefined>,
   'deleteArticle' : ActorMethod<[string], undefined>,
   /**

@@ -1,266 +1,221 @@
-import React, { useState } from 'react';
-import { Mail, MapPin, Clock, Send, CheckCircle, Megaphone } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
+import { useState } from 'react';
+import { Mail, MessageSquare, CheckCircle } from 'lucide-react';
 
-interface ContactForm {
+interface FormData {
   name: string;
   email: string;
   subject: string;
   message: string;
 }
 
-interface FormErrors {
-  name?: string;
-  email?: string;
-  subject?: string;
-  message?: string;
-}
-
-function validateEmail(email: string): boolean {
-  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
-}
-
-function validateForm(form: ContactForm): FormErrors {
-  const errors: FormErrors = {};
-  if (!form.name.trim()) errors.name = 'Name is required.';
-  if (!form.email.trim()) {
-    errors.email = 'Email is required.';
-  } else if (!validateEmail(form.email)) {
-    errors.email = 'Please enter a valid email address.';
-  }
-  if (!form.subject.trim()) errors.subject = 'Subject is required.';
-  if (!form.message.trim()) errors.message = 'Message is required.';
-  return errors;
-}
-
-const CONTACT_INFO = [
-  {
-    icon: Mail,
-    label: 'Editorial',
-    value: 'editorial@insidepettech.com',
-    href: 'mailto:editorial@insidepettech.com',
-  },
-  {
-    icon: Mail,
-    label: 'Press & Partnerships',
-    value: 'partnerships@insidepettech.com',
-    href: 'mailto:partnerships@insidepettech.com',
-  },
-  {
-    icon: Clock,
-    label: 'Response Time',
-    value: 'Within 2 business days',
-    href: null,
-  },
-  {
-    icon: MapPin,
-    label: 'Coverage',
-    value: 'Global pet technology industry',
-    href: null,
-  },
-];
-
 export default function ContactPage() {
-  const [form, setForm] = useState<ContactForm>({ name: '', email: '', subject: '', message: '' });
-  const [errors, setErrors] = useState<FormErrors>({});
+  const [formData, setFormData] = useState<FormData>({
+    name: '',
+    email: '',
+    subject: '',
+    message: '',
+  });
   const [submitted, setSubmitted] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    const { name, value } = e.target;
-    setForm((prev) => ({ ...prev, [name]: value }));
-    if (errors[name as keyof FormErrors]) {
-      setErrors((prev) => ({ ...prev, [name]: undefined }));
-    }
+  const handleChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
+  ) => {
+    setFormData((prev) => ({ ...prev, [e.target.name]: e.target.value }));
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    const validationErrors = validateForm(form);
-    if (Object.keys(validationErrors).length > 0) {
-      setErrors(validationErrors);
-      return;
-    }
-    // Client-side only — no backend persistence for contact form
+    setSubmitting(true);
+    // Simulate form submission
+    await new Promise((resolve) => setTimeout(resolve, 1000));
+    setSubmitting(false);
     setSubmitted(true);
   };
 
   return (
-    <main className="min-h-screen bg-background">
+    <main className="min-h-screen bg-slate-50">
       {/* Hero */}
-      <section className="bg-foreground text-background py-20 px-4 relative overflow-hidden">
-        <div className="brand-gradient absolute inset-0 opacity-10 pointer-events-none" />
-        <div className="max-w-4xl mx-auto relative z-10 text-center">
-          <span className="inline-block text-xs font-semibold uppercase tracking-widest text-background/50 mb-4">
-            Get In Touch
+      <section className="bg-slate-900 py-16">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+          <span className="inline-block px-3 py-1 bg-crimson-600 text-white text-xs font-semibold uppercase tracking-wider rounded mb-6">
+            Contact
           </span>
-          <h1 className="font-serif text-4xl md:text-5xl font-bold text-background mb-6 leading-tight">
-            Contact Inside Pet Tech
+          <h1 className="font-display text-4xl md:text-5xl font-bold text-white leading-tight mb-4">
+            Get in Touch
           </h1>
-          <p className="text-lg text-background/70 max-w-2xl mx-auto leading-relaxed">
-            Whether you have a story tip, partnership inquiry, or want to learn more about our coverage — we'd love to hear from you.
+          <p className="text-slate-300 text-lg">
+            Have a story tip, editorial inquiry, or advertising opportunity? We'd love to hear from
+            you.
           </p>
         </div>
       </section>
 
-      <section className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
-        <div className="grid grid-cols-1 lg:grid-cols-5 gap-12">
-          {/* Left panel — contact info */}
-          <div className="lg:col-span-2 space-y-6">
-            <div>
-              <h2 className="font-serif text-2xl font-bold text-foreground mb-2">Publication Contact</h2>
-              <p className="text-muted-foreground text-sm leading-relaxed">
-                Reach the right team directly. We cover the global pet technology industry and welcome story tips, press releases, and collaboration proposals.
-              </p>
-            </div>
-
-            {/* Contact info cards */}
-            <div className="space-y-3">
-              {CONTACT_INFO.map(({ icon: Icon, label, value, href }) => (
-                <div
-                  key={label}
-                  className="flex items-start gap-3 p-4 rounded-lg border border-border bg-card shadow-sm"
-                >
-                  <div className="mt-0.5 p-2 rounded-md bg-brand-crimson/10">
-                    <Icon size={15} className="text-brand-crimson" />
-                  </div>
-                  <div>
-                    <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground mb-0.5">{label}</p>
-                    {href ? (
-                      <a href={href} className="text-sm text-foreground hover:text-brand-crimson transition-colors font-medium">
-                        {value}
-                      </a>
-                    ) : (
-                      <p className="text-sm text-foreground font-medium">{value}</p>
-                    )}
-                  </div>
-                </div>
-              ))}
-            </div>
-
-            {/* Advertising opportunities callout */}
-            <div className="p-5 rounded-lg border border-brand-crimson/20 bg-brand-crimson/5 shadow-sm">
-              <div className="flex items-start gap-3">
-                <div className="mt-0.5 p-2 rounded-md bg-brand-crimson/10 shrink-0">
-                  <Megaphone size={15} className="text-brand-crimson" />
-                </div>
-                <div>
-                  <p className="text-sm font-semibold text-foreground mb-1">Advertising Opportunities</p>
-                  <p className="text-sm text-muted-foreground leading-relaxed">
-                    We offer a variety of advertising and sponsorship opportunities to help your brand reach founders, investors, executives, and operators across the pet technology industry — from sponsored content and newsletter placements to category sponsorships and display advertising.
-                  </p>
-                  <p className="text-sm text-muted-foreground mt-2 leading-relaxed">
-                    Get in touch at{' '}
-                    <a
-                      href="mailto:advertising@insidepettech.com"
-                      className="text-brand-crimson hover:underline font-medium"
-                    >
-                      advertising@insidepettech.com
-                    </a>{' '}
-                    to discuss how we can work together.
-                  </p>
-                </div>
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
+          {/* Contact Info */}
+          <div className="space-y-6">
+            <div className="bg-white rounded-xl p-6 border border-slate-100 shadow-sm">
+              <div className="p-2.5 bg-crimson-50 rounded-lg w-fit mb-4">
+                <Mail className="h-5 w-5 text-crimson-600" />
               </div>
+              <h3 className="font-display text-lg font-bold text-slate-900 mb-2">
+                Editorial Inquiries
+              </h3>
+              <p className="text-slate-600 text-sm leading-relaxed mb-3">
+                Have a story tip, press release, or editorial question? Reach out to our editorial
+                team.
+              </p>
+              <a
+                href="mailto:editorial@insidepettech.com"
+                className="text-crimson-600 hover:text-crimson-700 text-sm font-medium"
+              >
+                editorial@insidepettech.com
+              </a>
+            </div>
+
+            <div className="bg-white rounded-xl p-6 border border-slate-100 shadow-sm">
+              <div className="p-2.5 bg-crimson-50 rounded-lg w-fit mb-4">
+                <MessageSquare className="h-5 w-5 text-crimson-600" />
+              </div>
+              <h3 className="font-display text-lg font-bold text-slate-900 mb-2">
+                Advertising Opportunities
+              </h3>
+              <p className="text-slate-600 text-sm leading-relaxed mb-3">
+                Reach thousands of pet industry professionals, investors, and enthusiasts. We offer
+                display advertising, sponsored content, newsletter placements, and custom
+                partnerships.
+              </p>
+              <a
+                href="mailto:advertising@insidepettech.com"
+                className="text-crimson-600 hover:text-crimson-700 text-sm font-medium"
+              >
+                advertising@insidepettech.com
+              </a>
             </div>
           </div>
 
-          {/* Right panel — contact form */}
-          <div className="lg:col-span-3">
+          {/* Contact Form */}
+          <div className="lg:col-span-2">
             {submitted ? (
-              <div className="flex flex-col items-center justify-center h-full min-h-[400px] text-center px-8">
-                <div className="w-16 h-16 rounded-full bg-green-100 flex items-center justify-center mb-6">
-                  <CheckCircle size={32} className="text-green-600" />
+              <div className="bg-white rounded-xl p-12 border border-slate-100 shadow-sm text-center">
+                <div className="flex justify-center mb-4">
+                  <CheckCircle className="h-16 w-16 text-green-500" />
                 </div>
-                <h3 className="font-serif text-2xl font-bold text-foreground mb-3">Message Sent</h3>
-                <p className="text-muted-foreground leading-relaxed max-w-sm">
-                  Thank you for reaching out. We'll review your message and get back to you within 2 business days.
+                <h2 className="font-display text-2xl font-bold text-slate-900 mb-3">
+                  Message Sent!
+                </h2>
+                <p className="text-slate-600 mb-6">
+                  Thank you for reaching out. We'll get back to you within 1–2 business days.
                 </p>
-                <Button
-                  variant="outline"
-                  className="mt-8"
-                  onClick={() => { setSubmitted(false); setForm({ name: '', email: '', subject: '', message: '' }); }}
+                <button
+                  onClick={() => {
+                    setSubmitted(false);
+                    setFormData({ name: '', email: '', subject: '', message: '' });
+                  }}
+                  className="px-6 py-2.5 bg-crimson-600 hover:bg-crimson-700 text-white font-medium rounded transition-colors text-sm"
                 >
                   Send Another Message
-                </Button>
+                </button>
               </div>
             ) : (
-              <form onSubmit={handleSubmit} noValidate className="space-y-6 bg-card border border-border rounded-xl p-8 shadow-sm">
-                <div>
-                  <h2 className="font-serif text-2xl font-bold text-foreground mb-1">Send a Message</h2>
-                  <p className="text-sm text-muted-foreground">Fill in the form below and we'll be in touch shortly.</p>
-                </div>
-
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
-                  {/* Name */}
-                  <div className="space-y-1.5">
-                    <Label htmlFor="name">Full Name <span className="text-brand-crimson">*</span></Label>
-                    <Input
-                      id="name"
-                      name="name"
-                      value={form.name}
-                      onChange={handleChange}
-                      placeholder="Jane Smith"
-                      className={errors.name ? 'border-destructive' : ''}
-                    />
-                    {errors.name && <p className="text-xs text-destructive">{errors.name}</p>}
+              <div className="bg-white rounded-xl p-8 border border-slate-100 shadow-sm">
+                <h2 className="font-display text-2xl font-bold text-slate-900 mb-6">
+                  Send Us a Message
+                </h2>
+                <form onSubmit={handleSubmit} className="space-y-5">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                    <div>
+                      <label
+                        htmlFor="name"
+                        className="block text-sm font-medium text-slate-700 mb-1.5"
+                      >
+                        Name <span className="text-crimson-600">*</span>
+                      </label>
+                      <input
+                        id="name"
+                        name="name"
+                        type="text"
+                        required
+                        value={formData.name}
+                        onChange={handleChange}
+                        className="w-full px-4 py-2.5 border border-slate-200 rounded-lg text-slate-900 placeholder-slate-400 focus:outline-none focus:border-crimson-500 focus:ring-1 focus:ring-crimson-500 text-sm"
+                        placeholder="Your name"
+                      />
+                    </div>
+                    <div>
+                      <label
+                        htmlFor="email"
+                        className="block text-sm font-medium text-slate-700 mb-1.5"
+                      >
+                        Email <span className="text-crimson-600">*</span>
+                      </label>
+                      <input
+                        id="email"
+                        name="email"
+                        type="email"
+                        required
+                        value={formData.email}
+                        onChange={handleChange}
+                        className="w-full px-4 py-2.5 border border-slate-200 rounded-lg text-slate-900 placeholder-slate-400 focus:outline-none focus:border-crimson-500 focus:ring-1 focus:ring-crimson-500 text-sm"
+                        placeholder="your@email.com"
+                      />
+                    </div>
                   </div>
-
-                  {/* Email */}
-                  <div className="space-y-1.5">
-                    <Label htmlFor="email">Email Address <span className="text-brand-crimson">*</span></Label>
-                    <Input
-                      id="email"
-                      name="email"
-                      type="email"
-                      value={form.email}
+                  <div>
+                    <label
+                      htmlFor="subject"
+                      className="block text-sm font-medium text-slate-700 mb-1.5"
+                    >
+                      Subject <span className="text-crimson-600">*</span>
+                    </label>
+                    <select
+                      id="subject"
+                      name="subject"
+                      required
+                      value={formData.subject}
                       onChange={handleChange}
-                      placeholder="jane@example.com"
-                      className={errors.email ? 'border-destructive' : ''}
-                    />
-                    {errors.email && <p className="text-xs text-destructive">{errors.email}</p>}
+                      className="w-full px-4 py-2.5 border border-slate-200 rounded-lg text-slate-900 focus:outline-none focus:border-crimson-500 focus:ring-1 focus:ring-crimson-500 text-sm bg-white"
+                    >
+                      <option value="">Select a subject</option>
+                      <option value="editorial">Editorial Inquiry</option>
+                      <option value="story-tip">Story Tip</option>
+                      <option value="advertising">Advertising Opportunity</option>
+                      <option value="partnership">Partnership</option>
+                      <option value="other">Other</option>
+                    </select>
                   </div>
-                </div>
-
-                {/* Subject */}
-                <div className="space-y-1.5">
-                  <Label htmlFor="subject">Subject <span className="text-brand-crimson">*</span></Label>
-                  <Input
-                    id="subject"
-                    name="subject"
-                    value={form.subject}
-                    onChange={handleChange}
-                    placeholder="Story tip, partnership, advertising enquiry…"
-                    className={errors.subject ? 'border-destructive' : ''}
-                  />
-                  {errors.subject && <p className="text-xs text-destructive">{errors.subject}</p>}
-                </div>
-
-                {/* Message */}
-                <div className="space-y-1.5">
-                  <Label htmlFor="message">Message <span className="text-brand-crimson">*</span></Label>
-                  <Textarea
-                    id="message"
-                    name="message"
-                    value={form.message}
-                    onChange={handleChange}
-                    placeholder="Tell us more…"
-                    rows={6}
-                    className={errors.message ? 'border-destructive' : ''}
-                  />
-                  {errors.message && <p className="text-xs text-destructive">{errors.message}</p>}
-                </div>
-
-                <Button type="submit" className="w-full brand-gradient text-white border-0 hover:opacity-90 transition-opacity">
-                  <Send size={15} className="mr-2" />
-                  Send Message
-                </Button>
-              </form>
+                  <div>
+                    <label
+                      htmlFor="message"
+                      className="block text-sm font-medium text-slate-700 mb-1.5"
+                    >
+                      Message <span className="text-crimson-600">*</span>
+                    </label>
+                    <textarea
+                      id="message"
+                      name="message"
+                      required
+                      rows={6}
+                      value={formData.message}
+                      onChange={handleChange}
+                      className="w-full px-4 py-2.5 border border-slate-200 rounded-lg text-slate-900 placeholder-slate-400 focus:outline-none focus:border-crimson-500 focus:ring-1 focus:ring-crimson-500 text-sm resize-none"
+                      placeholder="Tell us more..."
+                    />
+                  </div>
+                  <button
+                    type="submit"
+                    disabled={submitting}
+                    className="w-full px-6 py-3 bg-crimson-600 hover:bg-crimson-700 disabled:opacity-60 text-white font-medium rounded-lg transition-colors text-sm"
+                  >
+                    {submitting ? 'Sending...' : 'Send Message'}
+                  </button>
+                </form>
+              </div>
             )}
           </div>
         </div>
-      </section>
+      </div>
     </main>
   );
 }

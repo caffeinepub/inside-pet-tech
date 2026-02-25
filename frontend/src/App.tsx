@@ -1,28 +1,31 @@
-import React from 'react';
-import {
-  createRouter,
-  createRoute,
-  createRootRoute,
-  RouterProvider,
-  Outlet,
-} from '@tanstack/react-router';
+import { RouterProvider, createRouter, createRoute, createRootRoute, Outlet } from '@tanstack/react-router';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { ThemeProvider } from 'next-themes';
 import { Toaster } from '@/components/ui/sonner';
-import Navbar from './components/layout/Navbar';
-import Footer from './components/layout/Footer';
-import HomePage from './pages/HomePage';
-import CategoryPage from './pages/CategoryPage';
-import ArticleDetailPage from './pages/ArticleDetailPage';
-import AboutPage from './pages/AboutPage';
-import ContactPage from './pages/ContactPage';
-import AdminDashboard from './pages/admin/AdminDashboard';
-import ArticleEditor from './pages/admin/ArticleEditor';
-import AdminLayout from './pages/admin/AdminLayout';
+import Navbar from '@/components/layout/Navbar';
+import Footer from '@/components/layout/Footer';
+import HomePage from '@/pages/HomePage';
+import CategoryPage from '@/pages/CategoryPage';
+import ArticleDetailPage from '@/pages/ArticleDetailPage';
+import AboutPage from '@/pages/AboutPage';
+import ContactPage from '@/pages/ContactPage';
+import AdminLayout from '@/pages/admin/AdminLayout';
+import AdminDashboard from '@/pages/admin/AdminDashboard';
+import ArticleEditor from '@/pages/admin/ArticleEditor';
 
-// ── Root layout (public) ────────────────────────────────────────────────────
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      retry: 1,
+      staleTime: 30_000,
+    },
+  },
+});
+
+// Root layout with Navbar and Footer for public pages
 function PublicLayout() {
   return (
-    <div className="min-h-screen flex flex-col bg-background">
+    <div className="min-h-screen flex flex-col bg-slate-50">
       <Navbar />
       <div className="flex-1">
         <Outlet />
@@ -32,15 +35,19 @@ function PublicLayout() {
   );
 }
 
-// ── Routes ──────────────────────────────────────────────────────────────────
-const rootRoute = createRootRoute();
+// Root route
+const rootRoute = createRootRoute({
+  component: () => <Outlet />,
+});
 
+// Public layout route
 const publicLayoutRoute = createRoute({
   getParentRoute: () => rootRoute,
   id: 'public-layout',
   component: PublicLayout,
 });
 
+// Public routes
 const homeRoute = createRoute({
   getParentRoute: () => publicLayoutRoute,
   path: '/',
@@ -55,7 +62,7 @@ const categoryRoute = createRoute({
 
 const articleRoute = createRoute({
   getParentRoute: () => publicLayoutRoute,
-  path: '/article/$slug',
+  path: '/article/$id',
   component: ArticleDetailPage,
 });
 
@@ -71,7 +78,7 @@ const contactRoute = createRoute({
   component: ContactPage,
 });
 
-// Admin routes
+// Admin routes (no public navbar/footer)
 const adminLayoutRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/admin',
@@ -86,14 +93,14 @@ const adminDashboardRoute = createRoute({
 
 const adminNewArticleRoute = createRoute({
   getParentRoute: () => adminLayoutRoute,
-  path: '/articles/new',
-  component: () => <ArticleEditor mode="create" />,
+  path: '/new',
+  component: ArticleEditor,
 });
 
 const adminEditArticleRoute = createRoute({
   getParentRoute: () => adminLayoutRoute,
-  path: '/articles/$id/edit',
-  component: () => <ArticleEditor mode="edit" />,
+  path: '/edit/$id',
+  component: ArticleEditor,
 });
 
 const routeTree = rootRoute.addChildren([
@@ -121,9 +128,11 @@ declare module '@tanstack/react-router' {
 
 export default function App() {
   return (
-    <ThemeProvider attribute="class" defaultTheme="light" enableSystem={false}>
-      <RouterProvider router={router} />
-      <Toaster />
-    </ThemeProvider>
+    <QueryClientProvider client={queryClient}>
+      <ThemeProvider attribute="class" defaultTheme="light" enableSystem={false}>
+        <RouterProvider router={router} />
+        <Toaster richColors position="top-right" />
+      </ThemeProvider>
+    </QueryClientProvider>
   );
 }

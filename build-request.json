@@ -1,39 +1,90 @@
 {
   "kind": "build_request",
-  "title": "Add News & Views category section to homepage bottom sections",
+  "title": "Full revert to Version 3 site with current footer preserved",
   "projectName": "Inside Pet Tech",
-  "priority": "normal",
+  "priority": "high",
   "requirements": [
     {
-      "id": "REQ-22",
-      "text": "Add a 'News & Views' category section to the homepage bottom sections so that all four categories — Startups & Funding, News & Views, Interviews, and Market Trends — are displayed. The News & Views section must follow the same layout and styling as the other three category sections (section header with 'More' link, article cards with thumbnail, category tag, headline, and date).",
+      "id": "REQ-38",
+      "text": "Rebuild the entire public-facing frontend from scratch to match the Version 3 design and content exactly. This includes: the top navigation bar (Inside Pet Tech logo at frontend/public/assets/generated/inside-pet-tech-logo.png, category links for Startups & Funding, News & Views, Interviews, and Market Trends, no admin/sign-in links visible), the homepage hero/featured article section (large editorial layout showing the most recent featured article regardless of content type, with thumbnail image, category tag, headline, summary, author, and published date), the Latest News grid (recent published articles with thumbnail, category tag, headline, summary, author, date), category spotlight sections for all four categories (Startups & Funding, News & Views, Interviews, Market Trends) with section headers and article cards, the About page at /about, the Contact page at /contact with advertising opportunity mention, the article detail page, and the category listing pages. All typography (Playfair Display headlines, Inter body), colors (deep crimson-to-indigo gradient accents, off-white/light-gray background, dark near-black text), spacing, card layouts, button styles, section headers, and body copy must match Version 3.",
       "target": "frontend",
       "source": {
         "messageIds": [
           "msg-4"
         ],
         "quotes": [
-          "Why was the news and views section not listed on the bottom section?",
-          "Ensure 'News & Views' category section appears in the homepage bottom sections alongside Startups & Funding, Interviews, and Market Trends."
+          "PLEASE go back to version 3 in full. But add the footer section."
         ]
       },
       "acceptanceCriteria": [
-        "The homepage displays four category sections at the bottom: Startups & Funding, News & Views, Interviews, and Market Trends.",
-        "The News & Views section renders published articles tagged with the 'News & Views' category.",
-        "The News & Views section includes a 'More' link that navigates to the News & Views category page.",
-        "The News & Views section matches the visual layout and styling of the other three category sections on the homepage.",
-        "If no published articles exist for News & Views, the section still appears with an appropriate empty or placeholder state consistent with the other sections."
+        "Top navigation bar shows the original Inside Pet Tech logo from frontend/public/assets/generated/inside-pet-tech-logo.png",
+        "Navigation bar contains exactly four category links: Startups & Funding, News & Views, Interviews, Market Trends",
+        "No sign-in or admin links are visible in the public navigation",
+        "Homepage hero section displays the most recent featured article with thumbnail, category tag, headline, summary, author, and published date in a large editorial layout",
+        "Latest News grid displays recent published articles with thumbnail, category tag, headline, summary, author, and date",
+        "All four category spotlight sections (Startups & Funding, News & Views, Interviews, Market Trends) appear on the homepage with article cards",
+        "About page exists at /about with Version 3 content and styling",
+        "Contact page exists at /contact with Version 3 content, contact form, and advertising opportunities mention",
+        "Article detail page displays headline, author, published date, category tag, content type badge, hero image or video embed, full body content, and related articles section",
+        "Category listing pages display filtered published articles for each of the four categories",
+        "Typography uses Playfair Display for headlines and Inter for body text throughout",
+        "Color scheme uses deep crimson-to-indigo gradient accents against off-white/light-gray background with dark near-black text"
+      ]
+    },
+    {
+      "id": "REQ-39",
+      "text": "Preserve the current post-Version-7 footer exactly as-is in the rebuilt site. The footer must include: the newsletter signup section (email input wired to the subscribeToNewsletter backend call), About and Contact page links, all four category links (Startups & Funding, News & Views, Interviews, Market Trends), site description, tagline 'Covering the Companies, Technology, and Ideas Reshaping Pet Care', and the caffeine.ai attribution badge. Do not revert the footer to the Version 3 state.",
+      "target": "frontend",
+      "source": {
+        "messageIds": [
+          "msg-4"
+        ],
+        "quotes": [
+          "But add the footer section."
+        ]
+      },
+      "acceptanceCriteria": [
+        "Footer contains a functional newsletter signup form that calls the backend subscribeToNewsletter function",
+        "Footer displays About and Contact navigation links",
+        "Footer displays all four category links: Startups & Funding, News & Views, Interviews, Market Trends",
+        "Footer displays the tagline 'Covering the Companies, Technology, and Ideas Reshaping Pet Care'",
+        "Footer displays the caffeine.ai attribution badge",
+        "Footer displays the site description / brand info for Inside Pet Tech"
+      ]
+    },
+    {
+      "id": "REQ-40",
+      "text": "Ensure the backend Motoko actor is fully intact and compatible with the rebuilt frontend. The actor must expose all required endpoints: article CRUD (createArticle, updateArticle, deleteArticle, publishArticle, archiveArticle, getPublishedArticles, getFeaturedArticles, getArticleBySlug, getArticlesByCategory, getAllArticles), admin management (addAdmin, removeAdmin, isAdmin, claimInitialAdmin), newsletter subscription (subscribeToNewsletter, getNewsletterSubscribers), and user profile (saveCallerUserProfile, getCallerUserProfile). The backend must retain its existing seeded sample articles so the site renders populated content on first load.",
+      "target": "backend",
+      "source": {
+        "messageIds": [
+          "msg-4"
+        ],
+        "quotes": [
+          "PLEASE go back to version 3 in full"
+        ]
+      },
+      "acceptanceCriteria": [
+        "Backend compiles without errors",
+        "All public article query functions return data correctly",
+        "Admin-only mutation functions enforce principal-based access control",
+        "claimInitialAdmin is a no-op once at least one admin exists",
+        "Newsletter subscription stores email and timestamp",
+        "Seeded sample articles exist so the homepage and category pages render populated content"
       ]
     }
   ],
   "constraints": [
-    "Do not alter the layout or content of the other three existing category sections (Startups & Funding, Interviews, Market Trends).",
-    "Use the existing Category enum value and slug for 'News & Views' as defined in frontend/src/lib/utils.ts."
+    "The footer must NOT be reverted — it must match the current post-Version-7 footer with newsletter signup, About/Contact links, category links, tagline, and caffeine.ai badge",
+    "The Navbar logo must use frontend/public/assets/generated/inside-pet-tech-logo.png — no generic or placeholder logo",
+    "Admin/sign-in entry points must not be visible in any public-facing navigation",
+    "Do not modify files in frontend/src/hooks/useInternetIdentity.ts, frontend/src/hooks/useActor.ts, frontend/src/main.tsx, or frontend/src/components/ui"
   ],
   "nonGoals": [
-    "Adding new backend fields or modifying the data model.",
-    "Changing the category simplification already implemented in the backend.",
-    "Modifying the Navbar or Footer category links."
+    "Introducing any new pages or features beyond what existed in Version 3",
+    "Changing the backend data schema or adding new backend endpoints",
+    "Modifying the admin dashboard layout or functionality",
+    "Adding new categories beyond the four: Startups & Funding, News & Views, Interviews, Market Trends"
   ],
   "imageRequirements": {
     "required": [],

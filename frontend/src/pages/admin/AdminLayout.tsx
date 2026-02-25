@@ -1,153 +1,273 @@
-import React from 'react';
-import { Link, Outlet } from '@tanstack/react-router';
-import { LayoutDashboard, FileText, LogOut, Home } from 'lucide-react';
+import { Outlet, Link, useNavigate } from '@tanstack/react-router';
+import { useEffect, useState, useRef } from 'react';
 import { useInternetIdentity } from '../../hooks/useInternetIdentity';
+import { useActor } from '../../hooks/useActor';
+import { useIsCallerAdmin, useClaimInitialAdmin, useGetCallerUserProfile } from '../../hooks/useQueries';
 import { useQueryClient } from '@tanstack/react-query';
-import { useIsCallerAdmin, useGetCallerUserProfile } from '../../hooks/useQueries';
 import ProfileSetupModal from '../../components/auth/ProfileSetupModal';
+import { Button } from '@/components/ui/button';
+import { Loader2, Shield, LogOut, LayoutDashboard, PenSquare, AlertCircle, RefreshCw } from 'lucide-react';
+import { toast } from 'sonner';
+
+const CONNECTION_TIMEOUT_MS = 15_000;
 
 export default function AdminLayout() {
-  const { identity, clear, login, loginStatus } = useInternetIdentity();
+  const { identity, clear, loginStatus, login } = useInternetIdentity();
+  const { actor, isFetching: actorFetching } = useActor();
   const queryClient = useQueryClient();
-  const { data: isAdmin, isLoading: checkingAdmin } = useIsCallerAdmin();
-  const { data: userProfile, isLoading: profileLoading, isFetched: profileFetched } = useGetCallerUserProfile();
+  const navigate = useNavigate();
 
   const isAuthenticated = !!identity;
   const isLoggingIn = loginStatus === 'logging-in';
 
-  const showProfileSetup = isAuthenticated && !profileLoading && profileFetched && userProfile === null;
+  const {
+    data: isAdmin,
+    isLoading: adminLoading,
+    refetch: refetchAdmin,
+  } = useIsCallerAdmin();
+
+  const {
+    data: userProfile,
+    isLoading: profileLoading,
+    isFetched: profileFetched,
+  } = useGetCallerUserProfile();
+
+  const claimMutation = useClaimInitialAdmin();
+
+  // Connection timeout state
+  const [timedOut, setTimedOut] = useState(false);
+  const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  // Polling state after claim
+  const [pollingAdmin, setPollingAdmin] = useState(false);
+  const pollIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
+  // Determine if we're still connecting (actor not ready yet)
+  const isConnecting = !actor && actorFetching;
+
+  useEffect(() => {
+    if (isConnecting && !timedOut) {
+      timeoutRef.current = setTimeout(() => setTimedOut(true), CONNECTION_TIMEOUT_MS);
+    } else {
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current);
+        timeoutRef.current = null;
+      }
+    }
+    return () => {
+      if (timeoutRef.current) clearTimeout(timeoutRef.current);
+    };
+  }, [isConnecting, timedOut]);
+
+  // Poll admin status after claim until it flips true
+  useEffect(() => {
+    if (pollingAdmin) {
+      pollIntervalRef.current = setInterval(async () => {
+        const result = await refetchAdmin();
+        if (result.data === true) {
+          setPollingAdmin(false);
+          if (pollIntervalRef.current) clearInterval(pollIntervalRef.current);
+        }
+      }, 1500);
+    }
+    return () => {
+      if (pollIntervalRef.current) clearInterval(pollIntervalRef.current);
+    };
+  }, [pollingAdmin, refetchAdmin]);
+
+  const handleLogin = async () => {
+    try {
+      await login();
+    } catch (error: unknown) {
+      const err = error as Error;
+      if (err.message === 'User is already authenticated') {
+        await clear();
+        setTimeout(() => login(), 300);
+      }
+    }
+  };
 
   const handleLogout = async () => {
     await clear();
     queryClient.clear();
+    navigate({ to: '/' });
   };
 
-  // Not authenticated
+  const handleClaimAdmin = async () => {
+    try {
+      await claimMutation.mutateAsync();
+      toast.success('Admin access claimed! Verifying...');
+      setPollingAdmin(true);
+    } catch (err: unknown) {
+      const error = err as Error;
+      toast.error(`Failed to claim admin: ${error.message}`);
+    }
+  };
+
+  const showProfileSetup =
+    isAuthenticated && !profileLoading && profileFetched && userProfile === null;
+
+  // ── Render: Not authenticated ──────────────────────────────────────────────
   if (!isAuthenticated) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <div className="text-center max-w-sm mx-auto px-4">
-          <img
-            src="/assets/generated/inside-pet-tech-logo.dim_400x480.png"
-            alt="Inside Pet Tech"
-            className="h-20 w-auto mx-auto mb-6"
-          />
-          <h1 className="text-2xl font-serif font-bold text-foreground mb-2">Admin Access</h1>
-          <p className="text-muted-foreground text-sm mb-6">
-            Sign in with your Internet Identity to access the content dashboard.
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <div className="max-w-md w-full mx-auto p-8 text-center">
+          <div className="w-16 h-16 bg-crimson-100 rounded-full flex items-center justify-center mx-auto mb-6">
+            <Shield className="w-8 h-8 text-crimson-600" />
+          </div>
+          <h1 className="font-display text-2xl font-bold text-foreground mb-3">Admin Access</h1>
+          <p className="text-muted-foreground mb-8">
+            Sign in to access the Inside Pet Tech admin dashboard.
           </p>
-          <button
-            onClick={login}
+          <Button
+            onClick={handleLogin}
             disabled={isLoggingIn}
-            className="w-full brand-gradient text-white font-medium py-2.5 px-6 rounded-md hover:opacity-90 transition-opacity disabled:opacity-50"
+            className="w-full bg-crimson-600 hover:bg-crimson-700 text-white"
           >
-            {isLoggingIn ? 'Signing in...' : 'Sign In with Internet Identity'}
-          </button>
-          <Link to="/" className="block mt-4 text-sm text-muted-foreground hover:text-foreground transition-colors">
-            ← Back to site
-          </Link>
+            {isLoggingIn ? (
+              <>
+                <Loader2 className="w-4 h-4 mr-2 animate-spin" /> Signing in...
+              </>
+            ) : (
+              'Sign In'
+            )}
+          </Button>
         </div>
       </div>
     );
   }
 
-  // Checking admin status
-  if (checkingAdmin) {
+  // ── Render: Connecting (with timeout fallback) ─────────────────────────────
+  if (isConnecting) {
+    if (timedOut) {
+      return (
+        <div className="min-h-screen flex items-center justify-center bg-background">
+          <div className="max-w-md w-full mx-auto p-8 text-center">
+            <AlertCircle className="w-12 h-12 text-amber-500 mx-auto mb-4" />
+            <h2 className="font-display text-xl font-bold text-foreground mb-3">Connection Timeout</h2>
+            <p className="text-muted-foreground mb-6">
+              Unable to connect to the backend. Please refresh the page and try again.
+            </p>
+            <Button onClick={() => window.location.reload()} variant="outline" className="w-full">
+              <RefreshCw className="w-4 h-4 mr-2" /> Refresh Page
+            </Button>
+          </div>
+        </div>
+      );
+    }
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
+      <div className="min-h-screen flex items-center justify-center bg-background">
         <div className="text-center">
-          <div className="w-8 h-8 border-2 border-brand-crimson border-t-transparent rounded-full animate-spin mx-auto mb-3" />
-          <p className="text-muted-foreground text-sm">Verifying access...</p>
+          <Loader2 className="w-8 h-8 animate-spin text-crimson-600 mx-auto mb-4" />
+          <p className="text-muted-foreground">Connecting to backend...</p>
         </div>
       </div>
     );
   }
 
-  // Not admin
+  // ── Render: Checking admin status ──────────────────────────────────────────
+  if (adminLoading || pollingAdmin) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <div className="text-center">
+          <Loader2 className="w-8 h-8 animate-spin text-crimson-600 mx-auto mb-4" />
+          <p className="text-muted-foreground">
+            {pollingAdmin ? 'Verifying admin access...' : 'Checking permissions...'}
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  // ── Render: Not admin — show claim button ──────────────────────────────────
   if (!isAdmin) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <div className="text-center max-w-sm mx-auto px-4">
-          <div className="w-16 h-16 rounded-full bg-destructive/10 flex items-center justify-center mx-auto mb-4">
-            <span className="text-2xl">🔒</span>
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <div className="max-w-md w-full mx-auto p-8 text-center">
+          <div className="w-16 h-16 bg-amber-100 rounded-full flex items-center justify-center mx-auto mb-6">
+            <Shield className="w-8 h-8 text-amber-600" />
           </div>
-          <h1 className="text-xl font-serif font-bold text-foreground mb-2">Access Denied</h1>
-          <p className="text-muted-foreground text-sm mb-6">
-            Your account doesn't have admin privileges. Contact an existing admin to grant access.
+          <h1 className="font-display text-2xl font-bold text-foreground mb-3">Claim Admin Access</h1>
+          <p className="text-muted-foreground mb-8">
+            No admin has been set up yet. Click below to claim initial admin access for this publication.
           </p>
-          <p className="text-xs text-muted-foreground mb-4 font-mono bg-muted px-3 py-2 rounded">
-            {identity?.getPrincipal().toString()}
-          </p>
-          <div className="flex gap-3 justify-center">
-            <Link to="/" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
-              ← Back to site
-            </Link>
-            <button onClick={handleLogout} className="text-sm text-destructive hover:text-destructive/80 transition-colors">
-              Sign Out
-            </button>
-          </div>
+          <Button
+            onClick={handleClaimAdmin}
+            disabled={claimMutation.isPending}
+            className="w-full bg-crimson-600 hover:bg-crimson-700 text-white"
+          >
+            {claimMutation.isPending ? (
+              <>
+                <Loader2 className="w-4 h-4 mr-2 animate-spin" /> Claiming...
+              </>
+            ) : (
+              <>
+                <Shield className="w-4 h-4 mr-2" /> Claim Admin Access
+              </>
+            )}
+          </Button>
+          <Button
+            variant="ghost"
+            onClick={handleLogout}
+            className="w-full mt-3 text-muted-foreground"
+          >
+            <LogOut className="w-4 h-4 mr-2" /> Sign Out
+          </Button>
         </div>
       </div>
     );
   }
 
+  // ── Render: Admin dashboard layout ────────────────────────────────────────
   return (
-    <div className="min-h-screen bg-background">
-      <ProfileSetupModal open={showProfileSetup} onComplete={() => {}} />
-
-      {/* Admin header */}
-      <header className="bg-foreground text-background border-b border-background/10 sticky top-0 z-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-14 flex items-center justify-between">
-          <div className="flex items-center gap-4">
-            <Link to="/" className="flex items-center gap-2">
-              <img
-                src="/assets/generated/inside-pet-tech-logo.dim_400x480.png"
-                alt="Inside Pet Tech"
-                className="h-8 w-auto brightness-0 invert"
-              />
-            </Link>
-            <span className="text-background/30 text-sm">|</span>
-            <span className="text-sm font-medium text-background/70">Admin</span>
+    <>
+      {showProfileSetup && (
+        <ProfileSetupModal
+          onComplete={() => {
+            queryClient.invalidateQueries({ queryKey: ['currentUserProfile'] });
+          }}
+        />
+      )}
+      <div className="min-h-screen bg-background">
+        {/* Admin Header */}
+        <header className="bg-slate-900 text-white border-b border-slate-700 sticky top-0 z-40">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+            <div className="flex items-center gap-6">
+              <Link to="/" className="font-display font-bold text-lg text-white hover:text-crimson-300 transition-colors">
+                Inside Pet Tech
+              </Link>
+              <span className="text-slate-500">|</span>
+              <span className="text-slate-400 text-sm font-medium">Admin</span>
+            </div>
+            <nav className="flex items-center gap-2">
+              <Link to="/admin">
+                <Button variant="ghost" size="sm" className="text-slate-300 hover:text-white hover:bg-slate-800">
+                  <LayoutDashboard className="w-4 h-4 mr-2" /> Dashboard
+                </Button>
+              </Link>
+              <Link to="/admin/new">
+                <Button size="sm" className="bg-crimson-600 hover:bg-crimson-700 text-white">
+                  <PenSquare className="w-4 h-4 mr-2" /> New Article
+                </Button>
+              </Link>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={handleLogout}
+                className="text-slate-300 hover:text-white hover:bg-slate-800"
+              >
+                <LogOut className="w-4 h-4 mr-2" />
+                {userProfile?.name ?? 'Sign Out'}
+              </Button>
+            </nav>
           </div>
-          <div className="flex items-center gap-3">
-            <span className="text-xs text-background/50 hidden sm:block">
-              {userProfile?.name ?? identity?.getPrincipal().toString().slice(0, 12) + '...'}
-            </span>
-            <Link
-              to="/"
-              className="text-xs text-background/60 hover:text-background transition-colors flex items-center gap-1"
-            >
-              <Home size={12} /> Site
-            </Link>
-            <button
-              onClick={handleLogout}
-              className="text-xs text-background/60 hover:text-background transition-colors flex items-center gap-1"
-            >
-              <LogOut size={12} /> Sign Out
-            </button>
-          </div>
-        </div>
-      </header>
+        </header>
 
-      {/* Admin nav */}
-      <nav className="bg-card border-b border-border">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center gap-1 h-10">
-          <Link
-            to="/admin"
-            className="px-3 py-1.5 text-sm font-medium text-foreground/70 hover:text-foreground hover:bg-accent rounded-sm transition-colors flex items-center gap-1.5"
-          >
-            <LayoutDashboard size={13} /> Dashboard
-          </Link>
-          <Link
-            to="/admin/articles/new"
-            className="px-3 py-1.5 text-sm font-medium text-foreground/70 hover:text-foreground hover:bg-accent rounded-sm transition-colors flex items-center gap-1.5"
-          >
-            <FileText size={13} /> New Article
-          </Link>
+        {/* Admin Content */}
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          <Outlet />
         </div>
-      </nav>
-
-      <Outlet />
-    </div>
+      </div>
+    </>
   );
 }

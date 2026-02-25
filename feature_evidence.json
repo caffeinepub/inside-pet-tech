@@ -2,10 +2,19 @@
   "kind": "feature_evidence_report",
   "features": [
     {
-      "featureId": "feature-add-a-news-views-category-section-to-the-homepage-bottom-sections-so-that-all-four-categories-startups-funding-news-views-interviews-and-market-trends-are-displayed-the-news-views-section-must-follow-the-same-layout-and-styling-as-the-other-three-category-sections-section-header-with-more-link-article-cards-with-thumbnail-category-tag-headline-and-date",
-      "featureTitle": "Add a 'News & Views' category section to the homepage bottom sections so that all four categories — Startups & Funding, News & Views, Interviews, and Market Trends — are displayed. The News & Views section must follow the same layout and styling as the other three category sections (section header with 'More' link, article cards with thumbnail, category tag, headline, and date).",
+      "featureId": "feature-rebuild-the-entire-public-facing-frontend-from-scratch-to-match-the-version-3-design-and-content-exactly-this-includes-the-top-navigation-bar-inside-pet-tech-logo-at-frontend-public-assets-generated-inside-pet-tech-logo-png-category-links-for-startups-funding-news-views-interviews-and-market-trends-no-admin-sign-in-links-visible-the-homepage-hero-featured-article-section-large-editorial-layout-showing-the-most-recent-featured-article-regardless-of-content-type-with-thumbnail-image-category-tag-headline-summary-author-and-published-date-the-latest-news-grid-recent-published-articles-with-thumbnail-category-tag-headline-summary-author-date-category-spotlight-sections-for-all-four-categories-startups-funding-news-views-interviews-market-trends-with-section-headers-and-article-cards-the-about-page-at-about-the-contact-page-at-contact-with-advertising-opportunity-mention-the-article-detail-page-and-the-category-listing-pages-all-typography-playfair-display-headlines-inter-body-colors-deep-crimson-to-indigo-gradient-accents-off-white-light-gray-background-dark-near-black-text-spacing-card-layouts-button-styles-section-headers-and-body-copy-must-match-version-3",
+      "featureTitle": "Rebuild the entire public-facing frontend from scratch to match the Version 3 design and content exactly. This includes: the top navigation bar (Inside Pet Tech logo at frontend/public/assets/generated/inside-pet-tech-logo.png, category links for Startups & Funding, News & Views, Interviews, and Market Trends, no admin/sign-in links visible), the homepage hero/featured article section (large editorial layout showing the most recent featured article regardless of content type, with thumbnail image, category tag, headline, summary, author, and published date), the Latest News grid (recent published articles with thumbnail, category tag, headline, summary, author, date), category spotlight sections for all four categories (Startups & Funding, News & Views, Interviews, Market Trends) with section headers and article cards, the About page at /about, the Contact page at /contact with advertising opportunity mention, the article detail page, and the category listing pages. All typography (Playfair Display headlines, Inter body), colors (deep crimson-to-indigo gradient accents, off-white/light-gray background, dark near-black text), spacing, card layouts, button styles, section headers, and body copy must match Version 3.",
       "files": [
-        "frontend/src/pages/HomePage.tsx"
+        "frontend/src/App.tsx",
+        "frontend/src/components/articles/ArticleCard.tsx",
+        "frontend/src/components/layout/Navbar.tsx",
+        "frontend/src/index.css",
+        "frontend/src/pages/AboutPage.tsx",
+        "frontend/src/pages/ArticleDetailPage.tsx",
+        "frontend/src/pages/CategoryPage.tsx",
+        "frontend/src/pages/ContactPage.tsx",
+        "frontend/src/pages/HomePage.tsx",
+        "frontend/tailwind.config.js"
       ],
       "components": [
         "authorization@4.0.0",
@@ -17,7 +26,27 @@
         "github-export-icp-cli@1.0.0"
       ],
       "testIds": [
-        "REQ-22"
+        "REQ-38"
+      ],
+      "confidence": "high"
+    },
+    {
+      "featureId": "feature-preserve-the-current-post-version-7-footer-exactly-as-is-in-the-rebuilt-site-the-footer-must-include-the-newsletter-signup-section-email-input-wired-to-the-subscribetonewsletter-backend-call-about-and-contact-page-links-all-four-category-links-startups-funding-news-views-interviews-market-trends-site-description-tagline-covering-the-companies-technology-and-ideas-reshaping-pet-care-and-the-caffeine-ai-attribution-badge-do-not-revert-the-footer-to-the-version-3-state",
+      "featureTitle": "Preserve the current post-Version-7 footer exactly as-is in the rebuilt site. The footer must include: the newsletter signup section (email input wired to the subscribeToNewsletter backend call), About and Contact page links, all four category links (Startups & Funding, News & Views, Interviews, Market Trends), site description, tagline 'Covering the Companies, Technology, and Ideas Reshaping Pet Care', and the caffeine.ai attribution badge. Do not revert the footer to the Version 3 state.",
+      "files": [
+        "frontend/src/components/layout/Footer.tsx"
+      ],
+      "components": [
+        "authorization@4.0.0",
+        "blob-storage@4.0.0",
+        "core-infrastructure@1.0.2",
+        "shadcn-ui@1.0.0",
+        "build-template-react@1.0.0",
+        "initial-app@1.0.0",
+        "github-export-icp-cli@1.0.0"
+      ],
+      "testIds": [
+        "REQ-39"
       ],
       "confidence": "high"
     }

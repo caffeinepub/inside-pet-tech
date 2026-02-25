@@ -1,187 +1,158 @@
-import React from 'react';
 import { useParams, Link } from '@tanstack/react-router';
-import { ArrowLeft, Calendar, User, Play } from 'lucide-react';
+import { ArrowLeft, Calendar, User, Tag } from 'lucide-react';
+import ArticleCard from '@/components/articles/ArticleCard';
 import { Skeleton } from '@/components/ui/skeleton';
-import ArticleCard from '../components/articles/ArticleCard';
-import { useGetPublishedArticles, useGetArticlesByCategory } from '../hooks/useQueries';
-import { ContentType } from '../backend';
-import {
-  CATEGORY_LABELS,
-  CATEGORY_SLUGS,
-  CATEGORY_GRADIENT_CLASSES,
-  CONTENT_TYPE_LABELS,
-  formatDate,
-} from '../lib/utils';
-
-function ArticleDetailSkeleton() {
-  return (
-    <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
-      <Skeleton className="h-4 w-24 mb-6" />
-      <Skeleton className="h-8 w-3/4 mb-3" />
-      <Skeleton className="h-6 w-1/2 mb-6" />
-      <Skeleton className="aspect-video w-full rounded-lg mb-8" />
-      <div className="space-y-3">
-        {[1, 2, 3, 4, 5].map((i) => <Skeleton key={i} className="h-4 w-full" />)}
-      </div>
-    </div>
-  );
-}
+import { useGetArticleById, useGetArticlesByCategory } from '@/hooks/useQueries';
+import { formatDate, categoryLabel, categorySlug, contentTypeLabel } from '@/lib/utils';
 
 export default function ArticleDetailPage() {
-  const { slug } = useParams({ from: '/public-layout/article/$slug' });
-  const { data: allArticles = [], isLoading } = useGetPublishedArticles();
+  const { id } = useParams({ from: '/public-layout/article/$id' });
+  const { data: article, isLoading, isError } = useGetArticleById(id);
 
-  const article = allArticles.find(a => a.slug === slug) ?? null;
-  const { data: relatedArticles = [] } = useGetArticlesByCategory(
-    article?.category ?? 'startupsAndFunding' as any
-  );
+  const catSlug = article ? categorySlug(article.category) : '';
+  const { data: relatedArticles } = useGetArticlesByCategory(article?.category as any);
+  const related = relatedArticles?.filter((a) => a.id !== id).slice(0, 3) ?? [];
 
   if (isLoading) {
-    return <ArticleDetailSkeleton />;
-  }
-
-  if (!article) {
     return (
-      <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-16 text-center">
-        <h1 className="text-2xl font-serif font-bold text-foreground mb-2">Article Not Found</h1>
-        <p className="text-muted-foreground mb-6">
-          The article you're looking for doesn't exist or has been removed.
-        </p>
-        <Link
-          to="/"
-          className="text-brand-crimson hover:text-brand-indigo transition-colors font-medium flex items-center gap-1 justify-center"
-        >
-          <ArrowLeft size={16} /> Back to Home
-        </Link>
+      <main className="min-h-screen bg-slate-50">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+          <Skeleton className="h-6 w-32 mb-8" />
+          <Skeleton className="h-10 w-3/4 mb-4" />
+          <Skeleton className="h-5 w-1/2 mb-8" />
+          <Skeleton className="aspect-video w-full rounded-xl mb-8" />
+          <div className="space-y-4">
+            <Skeleton className="h-4 w-full" />
+            <Skeleton className="h-4 w-full" />
+            <Skeleton className="h-4 w-5/6" />
+            <Skeleton className="h-4 w-full" />
+            <Skeleton className="h-4 w-4/5" />
+          </div>
+        </div>
       </main>
     );
   }
 
-  const gradientClass = CATEGORY_GRADIENT_CLASSES[article.category];
-  const related = relatedArticles
-    .filter(a => a.id !== article.id)
-    .sort((a, b) => Number(b.publishedAt ?? 0n) - Number(a.publishedAt ?? 0n))
-    .slice(0, 3);
+  if (isError || !article) {
+    return (
+      <main className="min-h-screen bg-slate-50 flex items-center justify-center">
+        <div className="text-center">
+          <p className="font-display text-2xl text-slate-700 mb-3">Article not found</p>
+          <p className="text-slate-500 text-sm mb-6">
+            This article may have been removed or is no longer available.
+          </p>
+          <Link
+            to="/"
+            className="inline-flex items-center gap-2 text-crimson-600 hover:text-crimson-700 font-medium"
+          >
+            <ArrowLeft className="h-4 w-4" />
+            Back to Home
+          </Link>
+        </div>
+      </main>
+    );
+  }
 
-  const isVideo = article.contentType === ContentType.video;
-  const thumbnail = article.thumbnailUrl || '/assets/generated/hero-placeholder.dim_1200x600.png';
+  const catLabel = categoryLabel(article.category);
+  const ctLabel = contentTypeLabel(article.contentType);
+  const thumbnail = article.thumbnailUrl || '/assets/generated/article-thumb-default.dim_600x400.png';
 
   return (
-    <main>
-      <article className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
-        {/* Back link */}
-        <Link
-          to="/category/$slug"
-          params={{ slug: CATEGORY_SLUGS[article.category] }}
-          className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors mb-6"
-        >
-          <ArrowLeft size={14} />
-          {CATEGORY_LABELS[article.category]}
-        </Link>
-
-        {/* Category & Content Type badges */}
-        <div className="flex items-center gap-2 mb-4">
+    <main className="min-h-screen bg-slate-50">
+      {/* Back Navigation */}
+      <div className="bg-slate-900 py-4">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
           <Link
             to="/category/$slug"
-            params={{ slug: CATEGORY_SLUGS[article.category] }}
-            className={`inline-block text-xs font-semibold uppercase tracking-wider text-white px-2.5 py-1 rounded-sm bg-gradient-to-r ${gradientClass} hover:opacity-90 transition-opacity`}
+            params={{ slug: catSlug }}
+            className="inline-flex items-center gap-2 text-slate-400 hover:text-white text-sm transition-colors"
           >
-            {CATEGORY_LABELS[article.category]}
+            <ArrowLeft className="h-4 w-4" />
+            Back to {catLabel}
           </Link>
-          <span className="text-xs font-medium uppercase tracking-wider text-muted-foreground border border-border px-2 py-0.5 rounded-sm">
-            {CONTENT_TYPE_LABELS[article.contentType]}
-          </span>
         </div>
+      </div>
 
-        {/* Headline */}
-        <h1 className="text-3xl sm:text-4xl lg:text-5xl font-serif font-bold text-foreground leading-tight mb-4">
-          {article.title}
-        </h1>
-
-        {/* Summary */}
-        <p className="text-lg text-muted-foreground leading-relaxed mb-6 font-sans">
-          {article.summary}
-        </p>
-
-        {/* Meta */}
-        <div className="flex flex-wrap items-center gap-4 text-sm text-muted-foreground border-y border-border py-4 mb-8">
-          <span className="flex items-center gap-1.5">
-            <User size={14} />
-            <span className="font-medium text-foreground">{article.author}</span>
-          </span>
-          {article.publishedAt && (
-            <span className="flex items-center gap-1.5">
-              <Calendar size={14} />
-              {formatDate(article.publishedAt)}
+      {/* Article Header */}
+      <div className="bg-slate-900 pb-10">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex items-center gap-2 mb-4">
+            <Link
+              to="/category/$slug"
+              params={{ slug: catSlug }}
+              className="px-3 py-1 bg-crimson-600 text-white text-xs font-semibold uppercase tracking-wider rounded hover:bg-crimson-700 transition-colors"
+            >
+              {catLabel}
+            </Link>
+            <span className="px-3 py-1 bg-slate-700 text-slate-300 text-xs font-medium rounded">
+              {ctLabel}
             </span>
-          )}
+          </div>
+          <h1 className="font-display text-3xl md:text-4xl lg:text-5xl font-bold text-white leading-tight mb-6">
+            {article.title}
+          </h1>
+          <p className="text-slate-300 text-lg leading-relaxed mb-6">{article.summary}</p>
+          <div className="flex flex-wrap items-center gap-5 text-slate-400 text-sm">
+            <span className="flex items-center gap-2">
+              <User className="h-4 w-4" />
+              <span className="text-slate-200">{article.author}</span>
+            </span>
+            {article.publishedAt && (
+              <span className="flex items-center gap-2">
+                <Calendar className="h-4 w-4" />
+                {formatDate(article.publishedAt)}
+              </span>
+            )}
+            <span className="flex items-center gap-2">
+              <Tag className="h-4 w-4" />
+              {catLabel}
+            </span>
+          </div>
         </div>
+      </div>
 
-        {/* Hero image or video */}
-        {isVideo && article.videoUrl ? (
-          <div className="mb-8 rounded-lg overflow-hidden editorial-shadow-lg">
-            <div className="aspect-video bg-black flex items-center justify-center relative">
-              <img
-                src={thumbnail}
-                alt={article.title}
-                className="w-full h-full object-cover opacity-60"
-                onError={(e) => {
-                  (e.target as HTMLImageElement).src = '/assets/generated/hero-placeholder.dim_1200x600.png';
-                }}
-              />
-              <div className="absolute inset-0 flex items-center justify-center">
-                <a
-                  href={article.videoUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="w-16 h-16 rounded-full brand-gradient flex items-center justify-center hover:scale-110 transition-transform shadow-xl"
-                >
-                  <Play size={24} className="text-white fill-white ml-1" />
-                </a>
-              </div>
-              <div className="absolute bottom-4 left-4 right-4">
-                <p className="text-white/70 text-sm text-center">Click to watch video</p>
-              </div>
-            </div>
+      {/* Hero Image or Video */}
+      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 -mt-4">
+        {article.videoUrl ? (
+          <div className="rounded-xl overflow-hidden shadow-editorial-lg aspect-video bg-slate-900">
+            <iframe
+              src={article.videoUrl}
+              title={article.title}
+              className="w-full h-full"
+              allowFullScreen
+            />
           </div>
         ) : (
-          <div className="mb-8 rounded-lg overflow-hidden editorial-shadow-lg">
+          <div className="rounded-xl overflow-hidden shadow-editorial-lg">
             <img
               src={thumbnail}
               alt={article.title}
               className="w-full aspect-video object-cover"
-              onError={(e) => {
-                (e.target as HTMLImageElement).src = '/assets/generated/hero-placeholder.dim_1200x600.png';
-              }}
             />
           </div>
         )}
+      </div>
 
-        {/* Body content */}
+      {/* Article Body */}
+      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
         <div
-          className="prose prose-lg max-w-none font-sans
-            prose-headings:font-serif prose-headings:text-foreground
-            prose-p:text-foreground/80 prose-p:leading-relaxed
-            prose-a:text-brand-crimson prose-a:no-underline hover:prose-a:underline
-            prose-strong:text-foreground
-            prose-ul:text-foreground/80 prose-ol:text-foreground/80
-            prose-blockquote:border-l-brand-crimson prose-blockquote:text-muted-foreground"
+          className="prose prose-slate prose-lg max-w-none prose-headings:font-display prose-headings:text-slate-900 prose-a:text-crimson-600 prose-a:no-underline hover:prose-a:underline"
           dangerouslySetInnerHTML={{ __html: article.body }}
         />
-      </article>
+      </div>
 
       {/* Related Articles */}
       {related.length > 0 && (
-        <section className="border-t border-border mt-12">
-          <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
-            <h2 className="text-xl font-serif font-bold text-foreground mb-6">Related Articles</h2>
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
+        <div className="border-t border-slate-200 bg-white py-12">
+          <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+            <h2 className="font-display text-2xl font-bold text-slate-900 mb-8">Related Articles</h2>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               {related.map((rel) => (
-                <ArticleCard key={rel.id} article={rel} />
+                <ArticleCard key={rel.id} article={rel} variant="default" />
               ))}
             </div>
           </div>
-        </section>
+        </div>
       )}
     </main>
   );

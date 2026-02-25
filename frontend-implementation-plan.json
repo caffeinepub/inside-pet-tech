@@ -1,23 +1,94 @@
 {
   "kind": "implementation_plan",
   "version": "1.0",
-  "title": "Add News & Views category section to homepage bottom sections",
+  "title": "Full revert to Version 3 site with current footer preserved",
   "requirements": [
     {
-      "id": "REQ-22",
-      "summary": "Add a 'News & Views' category section to the homepage bottom sections alongside the existing Startups & Funding, Interviews, and Market Trends sections, following the same layout and styling",
+      "id": "REQ-38",
+      "summary": "Rebuild the entire public-facing frontend from scratch to match the Version 3 design and content exactly, including top navigation with logo, homepage hero/featured article section, Latest News grid, category spotlight sections, About page, Contact page, article detail page, and category listing pages. All typography (Playfair Display headlines, Inter body), colors (deep crimson-to-indigo gradient accents, off-white/light-gray background, dark near-black text), spacing, card layouts, button styles, section headers, and body copy must match Version 3.",
       "acceptanceCriteria": [
-        "The homepage displays four category sections at the bottom: Startups & Funding, News & Views, Interviews, and Market Trends.",
-        "The News & Views section renders published articles tagged with the 'News & Views' category.",
-        "The News & Views section includes a 'More' link that navigates to the News & Views category page.",
-        "The News & Views section matches the visual layout and styling of the other three category sections on the homepage.",
-        "If no published articles exist for News & Views, the section still appears with an appropriate empty or placeholder state consistent with the other sections."
+        "Top navigation bar shows the original Inside Pet Tech logo from frontend/public/assets/generated/inside-pet-tech-logo.dim_400x480.png",
+        "Navigation bar contains exactly four category links: Startups & Funding, News & Views, Interviews, Market Trends",
+        "No sign-in or admin links are visible in the public navigation",
+        "Homepage hero section displays the most recent featured article with thumbnail, category tag, headline, summary, author, and published date in a large editorial layout",
+        "Latest News grid displays recent published articles with thumbnail, category tag, headline, summary, author, and date",
+        "All four category spotlight sections (Startups & Funding, News & Views, Interviews, Market Trends) appear on the homepage with article cards",
+        "About page exists at /about with Version 3 content and styling",
+        "Contact page exists at /contact with Version 3 content, contact form, and advertising opportunities mention",
+        "Article detail page displays headline, author, published date, category tag, content type badge, hero image or video embed, full body content, and related articles section",
+        "Category listing pages display filtered published articles for each of the four categories",
+        "Typography uses Playfair Display for headlines and Inter for body text throughout",
+        "Color scheme uses deep crimson-to-indigo gradient accents against off-white/light-gray background with dark near-black text"
       ],
       "file_operations": [
         {
+          "path": "frontend/src/components/layout/Navbar.tsx",
+          "operation": "modify",
+          "description": "Remove all authentication UI elements (Admin links, Sign Out button, and authentication state checks). Update the logo image path to reference frontend/public/assets/generated/inside-pet-tech-logo.dim_400x480.png. Ensure the navigation displays only the four category links (Startups & Funding, News & Views, Interviews, Market Trends) along with the logo. Remove any conditional rendering based on authentication state so all navigation elements are visible to anonymous users."
+        },
+        {
           "path": "frontend/src/pages/HomePage.tsx",
           "operation": "modify",
-          "description": "Add a fourth category section for 'News & Views' to the homepage bottom sections. Use the useArticlesByCategory query hook to fetch articles for Category.newsAndViews. Structure the section with a header row containing the category title and a 'More' link to '/category/news-and-views', followed by a grid of ArticleCard components in 'compact' variant. Place the News & Views section between the existing category sections, maintaining consistent spacing and layout. Ensure the section renders even when no articles are available, showing an appropriate empty state."
+          "description": "Restructure the homepage to match Version 3 layout: create a large editorial hero section that displays the most recent featured article (using getFeaturedArticles query, taking the first result) with thumbnail image, category tag, headline, summary, author name, and published date. Below the hero, add a 'Latest News' section displaying a grid of recent published articles (using getPublishedArticles query) with thumbnail, category tag, headline, summary, author, and date. Add four category spotlight sections for Startups & Funding, News & Views, Interviews, and Market Trends, each with a section header and article cards filtered by category. Use existing ArticleCard component variants as appropriate. Keep the newsletter signup component at the bottom of the page."
+        },
+        {
+          "path": "frontend/src/pages/AboutPage.tsx",
+          "operation": "modify",
+          "description": "Review and ensure the About page content and styling matches Version 3 design system. Update typography to use Playfair Display for headlines and Inter for body text. Apply the crimson-to-indigo gradient accents and ensure spacing and layout match Version 3 visual hierarchy. Verify the page describes Inside Pet Tech's mission, editorial pillars, and target audience segments."
+        },
+        {
+          "path": "frontend/src/pages/ContactPage.tsx",
+          "operation": "modify",
+          "description": "Review and ensure the Contact page includes a contact form for editorial and advertising inquiries with the advertising opportunity mention. Update typography and styling to match Version 3 design (Playfair Display headlines, Inter body, crimson-to-indigo accents). Ensure the form validation and success state display match Version 3 behavior and visual design."
+        },
+        {
+          "path": "frontend/src/pages/ArticleDetailPage.tsx",
+          "operation": "modify",
+          "description": "Review and update the article detail page layout to match Version 3 design. Ensure it displays headline, author, published date, category tag, content type badge, hero image or video embed (if videoUrl present), full body content, and a related articles section showing up to three articles from the same category. Apply Version 3 typography (Playfair Display headlines, Inter body), color scheme (crimson-to-indigo gradient accents, off-white/light-gray background, dark near-black text), and spacing. Use the ArticleCard component for related articles."
+        },
+        {
+          "path": "frontend/src/pages/CategoryPage.tsx",
+          "operation": "modify",
+          "description": "Review and ensure category listing pages filter and display published articles by category using the correct category slug mapping. Update page layout, typography, and styling to match Version 3 design (Playfair Display headlines, Inter body, crimson-to-indigo accents). Use ArticleCard components in a grid layout with loading skeletons and empty-state fallback. Ensure all four categories (Startups & Funding, News & Views, Interviews, Market Trends) are properly handled."
+        },
+        {
+          "path": "frontend/src/components/articles/ArticleCard.tsx",
+          "operation": "modify",
+          "description": "Review and update ArticleCard variants (default, compact, featured) to ensure they match Version 3 visual design with crimson branding, Playfair Display headings for article titles, Inter body text for summaries/metadata, and proper spacing. Ensure all three variants display thumbnail, category tag, headline, summary, author, and date consistently. Verify TanStack Router links to article detail and category pages are working correctly."
+        },
+        {
+          "path": "frontend/src/index.css",
+          "operation": "modify",
+          "description": "Review and ensure global styles match Version 3 design system. Verify Playfair Display and Inter font imports and declarations. Update CSS custom properties and utility classes to support the deep crimson-to-indigo gradient accents, off-white/light-gray background, and dark near-black text color scheme. Ensure editorial styling utilities (gradients, shadows, typography scales) match Version 3 specifications."
+        },
+        {
+          "path": "frontend/tailwind.config.js",
+          "operation": "modify",
+          "description": "Review and ensure Tailwind configuration defines the Version 3 color palettes (crimson, indigo, off-white/light-gray backgrounds, dark near-black text), custom fonts (Playfair Display for headlines, Inter for body), shadows, and border radii. Verify the animate and typography plugins are enabled to support Version 3 design requirements."
+        },
+        {
+          "path": "frontend/src/App.tsx",
+          "operation": "modify",
+          "description": "Review the router configuration and remove any admin route wiring or authenticated route guards from the public routes (home, category, article, about, contact). Ensure the public-facing site is fully accessible to anonymous users without requiring authentication. Keep only the admin routes under their own protected section if they still exist for internal use, but ensure they are completely separate from the public navigation."
+        }
+      ]
+    },
+    {
+      "id": "REQ-39",
+      "summary": "Preserve the current post-Version-7 footer exactly as-is in the rebuilt site, including newsletter signup section (email input wired to subscribeToNewsletter backend call), About and Contact page links, all four category links, site description, tagline, and caffeine.ai attribution badge.",
+      "acceptanceCriteria": [
+        "Footer contains a functional newsletter signup form that calls the backend subscribeToNewsletter function",
+        "Footer displays About and Contact navigation links",
+        "Footer displays all four category links: Startups & Funding, News & Views, Interviews, Market Trends",
+        "Footer displays the tagline 'Covering the Companies, Technology, and Ideas Reshaping Pet Care'",
+        "Footer displays the caffeine.ai attribution badge",
+        "Footer displays the site description / brand info for Inside Pet Tech"
+      ],
+      "file_operations": [
+        {
+          "path": "frontend/src/components/layout/Footer.tsx",
+          "operation": "modify",
+          "description": "Review the current Footer component and ensure it is preserved exactly as-is with no changes. Verify it includes the newsletter subscription form using the useSubscribeToNewsletter mutation, About and Contact page links, all four category links (Startups & Funding, News & Views, Interviews, Market Trends), the site description/brand info, the tagline 'Covering the Companies, Technology, and Ideas Reshaping Pet Care', and the caffeine.ai attribution badge. Ensure toast notifications display on subscription success or failure. Do not revert any styling or content in this component."
         }
       ]
     }

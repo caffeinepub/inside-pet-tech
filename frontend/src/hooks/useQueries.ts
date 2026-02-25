@@ -1,8 +1,72 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useActor } from './useActor';
-import { Article, Category, UserProfile, NewsletterSubscription } from '../backend';
+import { Article, Category, UserProfile } from '@/backend';
 
-// ── Public Queries ──────────────────────────────────────────────────────────
+// ── Admin ────────────────────────────────────────────────────────────────────
+
+export function useIsCallerAdmin() {
+  const { actor, isFetching } = useActor();
+  return useQuery<boolean>({
+    queryKey: ['isCallerAdmin'],
+    queryFn: async () => {
+      if (!actor) return false;
+      return actor.isCallerAdmin();
+    },
+    enabled: !!actor,
+    staleTime: 0,
+  });
+}
+
+export function useClaimInitialAdmin() {
+  const { actor } = useActor();
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async () => {
+      if (!actor) throw new Error('Actor not available');
+      return actor.claimInitialAdmin();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['isCallerAdmin'] });
+      queryClient.refetchQueries({ queryKey: ['isCallerAdmin'] });
+    },
+  });
+}
+
+// ── User Profile ─────────────────────────────────────────────────────────────
+
+export function useGetCallerUserProfile() {
+  const { actor, isFetching: actorFetching } = useActor();
+  const query = useQuery<UserProfile | null>({
+    queryKey: ['currentUserProfile'],
+    queryFn: async () => {
+      if (!actor) throw new Error('Actor not available');
+      return actor.getCallerUserProfile();
+    },
+    enabled: !!actor && !actorFetching,
+    retry: false,
+  });
+  return {
+    ...query,
+    isLoading: actorFetching || query.isLoading,
+    isFetched: !!actor && query.isFetched,
+  };
+}
+
+export function useSaveCallerUserProfile() {
+  const { actor } = useActor();
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (profile: UserProfile) => {
+      if (!actor) throw new Error('Actor not available');
+      return actor.saveCallerUserProfile(profile);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['currentUserProfile'] });
+    },
+  });
+}
+
+// ── Articles (Public) ─────────────────────────────────────────────────────────
 
 export function useGetPublishedArticles() {
   const { actor, isFetching } = useActor();
@@ -36,7 +100,7 @@ export function useGetArticlesByCategory(category: Category) {
       if (!actor) return [];
       return actor.getArticlesByCategory(category);
     },
-    enabled: !!actor && !isFetching,
+    enabled: !!actor && !isFetching && !!category,
   });
 }
 
@@ -60,11 +124,11 @@ export function useSearchArticles(searchTerm: string) {
       if (!actor || !searchTerm.trim()) return [];
       return actor.searchArticlesByTitle(searchTerm);
     },
-    enabled: !!actor && !isFetching && searchTerm.trim().length > 0,
+    enabled: !!actor && !isFetching && !!searchTerm.trim(),
   });
 }
 
-// ── Admin Queries ───────────────────────────────────────────────────────────
+// ── Articles (Admin) ──────────────────────────────────────────────────────────
 
 export function useGetAllArticles() {
   const { actor, isFetching } = useActor();
@@ -78,40 +142,6 @@ export function useGetAllArticles() {
   });
 }
 
-export function useIsCallerAdmin() {
-  const { actor, isFetching } = useActor();
-  return useQuery<boolean>({
-    queryKey: ['isCallerAdmin'],
-    queryFn: async () => {
-      if (!actor) return false;
-      return actor.isCallerAdmin();
-    },
-    enabled: !!actor && !isFetching,
-  });
-}
-
-// ── User Profile ────────────────────────────────────────────────────────────
-
-export function useGetCallerUserProfile() {
-  const { actor, isFetching: actorFetching } = useActor();
-  const query = useQuery<UserProfile | null>({
-    queryKey: ['currentUserProfile'],
-    queryFn: async () => {
-      if (!actor) throw new Error('Actor not available');
-      return actor.getCallerUserProfile();
-    },
-    enabled: !!actor && !actorFetching,
-    retry: false,
-  });
-  return {
-    ...query,
-    isLoading: actorFetching || query.isLoading,
-    isFetched: !!actor && query.isFetched,
-  };
-}
-
-// ── Admin Mutations ─────────────────────────────────────────────────────────
-
 export function useCreateArticle() {
   const { actor } = useActor();
   const queryClient = useQueryClient();
@@ -124,6 +154,7 @@ export function useCreateArticle() {
       queryClient.invalidateQueries({ queryKey: ['allArticles'] });
       queryClient.invalidateQueries({ queryKey: ['publishedArticles'] });
       queryClient.invalidateQueries({ queryKey: ['featuredArticles'] });
+      queryClient.invalidateQueries({ queryKey: ['articlesByCategory'] });
     },
   });
 }
@@ -140,6 +171,7 @@ export function useUpdateArticle() {
       queryClient.invalidateQueries({ queryKey: ['allArticles'] });
       queryClient.invalidateQueries({ queryKey: ['publishedArticles'] });
       queryClient.invalidateQueries({ queryKey: ['featuredArticles'] });
+      queryClient.invalidateQueries({ queryKey: ['articlesByCategory'] });
       queryClient.invalidateQueries({ queryKey: ['article'] });
     },
   });
@@ -157,6 +189,7 @@ export function useDeleteArticle() {
       queryClient.invalidateQueries({ queryKey: ['allArticles'] });
       queryClient.invalidateQueries({ queryKey: ['publishedArticles'] });
       queryClient.invalidateQueries({ queryKey: ['featuredArticles'] });
+      queryClient.invalidateQueries({ queryKey: ['articlesByCategory'] });
     },
   });
 }
@@ -173,6 +206,7 @@ export function usePublishArticle() {
       queryClient.invalidateQueries({ queryKey: ['allArticles'] });
       queryClient.invalidateQueries({ queryKey: ['publishedArticles'] });
       queryClient.invalidateQueries({ queryKey: ['featuredArticles'] });
+      queryClient.invalidateQueries({ queryKey: ['articlesByCategory'] });
     },
   });
 }
@@ -189,25 +223,12 @@ export function useArchiveArticle() {
       queryClient.invalidateQueries({ queryKey: ['allArticles'] });
       queryClient.invalidateQueries({ queryKey: ['publishedArticles'] });
       queryClient.invalidateQueries({ queryKey: ['featuredArticles'] });
+      queryClient.invalidateQueries({ queryKey: ['articlesByCategory'] });
     },
   });
 }
 
-export function useSaveCallerUserProfile() {
-  const { actor } = useActor();
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: async (profile: UserProfile) => {
-      if (!actor) throw new Error('Actor not available');
-      return actor.saveCallerUserProfile(profile);
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['currentUserProfile'] });
-    },
-  });
-}
-
-// ── Newsletter ──────────────────────────────────────────────────────────────
+// ── Newsletter ────────────────────────────────────────────────────────────────
 
 export function useSubscribeToNewsletter() {
   const { actor } = useActor();
@@ -216,17 +237,5 @@ export function useSubscribeToNewsletter() {
       if (!actor) throw new Error('Actor not available');
       return actor.subscribeToNewsletter(email);
     },
-  });
-}
-
-export function useGetAllNewsletterSubscribers() {
-  const { actor, isFetching } = useActor();
-  return useQuery<NewsletterSubscription[]>({
-    queryKey: ['newsletterSubscribers'],
-    queryFn: async () => {
-      if (!actor) return [];
-      return actor.getAllNewsletterSubscribers();
-    },
-    enabled: !!actor && !isFetching,
   });
 }

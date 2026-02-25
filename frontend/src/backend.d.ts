@@ -56,6 +56,7 @@ export interface backendInterface {
     addAdminPrincipal(user: Principal): Promise<void>;
     archiveArticle(id: string): Promise<void>;
     assignCallerUserRole(user: Principal, role: UserRole): Promise<void>;
+    claimInitialAdmin(): Promise<boolean>;
     createArticle(article: Article): Promise<void>;
     deleteArticle(id: string): Promise<void>;
     /**

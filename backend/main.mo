@@ -9,8 +9,6 @@ import AccessControl "authorization/access-control";
 import MixinStorage "blob-storage/Mixin";
 import Storage "blob-storage/Storage";
 
-
-
 actor {
   // ── Mixins ──────────────────────────────────────────────────────────────────
   include MixinStorage();
@@ -70,6 +68,12 @@ actor {
   let articles = Map.empty<Text, Article>();
   let userProfiles = Map.empty<Principal, UserProfile>();
   let newsletterSubscribers = Map.empty<Text, NewsletterSubscription>();
+
+  // ── First Admin Claim ───────────────────────────────────────────────────────
+  public shared ({ caller }) func claimInitialAdmin() : async Bool {
+    AccessControl.initialize(accessControlState, caller, "adminToken_placeholder", "userProvidedToken_placeholder");
+    true;
+  };
 
   // ── User Profile Functions ──────────────────────────────────────────────────
 

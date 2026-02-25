@@ -1,6 +1,6 @@
 {
   "schemaVersion": "1.0.0",
-  "projectStateVersion": 13,
+  "projectStateVersion": 31,
   "summary": "A news website called 'Inside Pet Tech' dedicated to the Pet Tech industry. Modeled after Retail Dive, it features news stories, articles, interviews, and videos about companies, technology, and ideas reshaping pet care. Includes a strong back-end content moderation system for easy article uploads. Target audience: founders, executives, veterinarians, investors, and operators. Categories are being simplified to: Startups & Funding, News & Views, Interviews, and Market Trends.",
   "architectural_notes": [
     "Site should follow an editorial news layout inspired by Retail Dive",
@@ -10,7 +10,14 @@
   ],
   "known_issues": [
     "About page and Contact page are not visibly accessible/navigable from the public site",
-    "News & Views category section is missing from the homepage bottom category sections (only Startups & Funding, Interviews, and Market Trends appear)"
+    "News & Views category section is missing from the homepage bottom category sections (only Startups & Funding, Interviews, and Market Trends appear)",
+    "No admin principal is set after deployment — first-time login does not grant admin access",
+    "After clicking 'Claim Admin Access', the button reverts to showing 'Connecting' state indefinitely — the actor never resolves and the claim never completes",
+    "Version 9 deployment failed to go live — build/deployment error occurred during publish",
+    "Version 11 top navigation/hero design regressed from Version 6/7 — user wants top restored to Version 6 or 7 design while keeping the new footer section",
+    "Version 12 design and copy still does not match Version 6/7 — user reports it looks completely different; full revert to Version 6/7 design and wording required across the board, with only the footer section remaining different",
+    "Version 13 replaced the custom Inside Pet Tech logo in the Navbar with a generic logo — the original uploaded logo must be restored",
+    "Version 14 removed almost the entire site — user reports the build is nearly empty and requests a full revert to Version 3 with only the footer section preserved"
   ],
   "isFixRequest": true,
   "existing_features": [
@@ -139,6 +146,118 @@
       "title": "Add a 'News & Views' category section to the homepage bottom sections so that all four categories — Startups & Funding, News & Views, Interviews, and Market Trends — are displayed. The News & Views section must follow the same layout and styling as the other three category sections (section header with 'More' link, article cards with thumbnail, category tag, headline, and date).",
       "reqIds": [
         "REQ-22"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-update-the-adminlayout-frontend-component-to-call-claiminitialadmin-or-equivalent-automatically-when-an-authenticated-user-attempts-to-access-admin-and-the-backend-reports-they-are-not-an-admin-and-no-admins-exist-yet-display-a-prompt-or-button-labeled-claim-admin-access-that-triggers-the-claim-call-then-re-checks-admin-status-if-the-claim-succeeds-grant-access-to-the-dashboard-if-admins-already-exist-and-the-user-is-not-one-show-the-existing-not-authorized-message",
+      "title": "Update the AdminLayout frontend component to call `claimInitialAdmin` (or equivalent) automatically when an authenticated user attempts to access /admin and the backend reports they are not an admin AND no admins exist yet. Display a prompt or button labeled 'Claim Admin Access' that triggers the claim call, then re-checks admin status. If the claim succeeds, grant access to the dashboard. If admins already exist and the user is not one, show the existing 'not authorized' message.",
+      "reqIds": [
+        "REQ-24"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-fix-the-actor-not-available-error-that-occurs-in-adminlayout-when-the-user-clicks-the-claim-admin-access-button-the-backend-actor-must-be-fully-initialized-and-resolved-before-the-claim-call-is-attempted-update-the-adminlayout-component-to-wait-for-the-actor-to-be-ready-non-null-non-undefined-before-enabling-or-invoking-the-claiminitialadmin-call-if-the-actor-is-still-loading-show-a-loading-spinner-state-on-the-button-instead-of-attempting-the-call-additionally-ensure-the-useactor-hook-or-the-mutation-in-usequeries-ts-properly-surfaces-actor-initialization-errors-so-the-ui-can-handle-them-gracefully",
+      "title": "Fix the 'Actor not available' error that occurs in AdminLayout when the user clicks the 'Claim Admin Access' button. The backend actor must be fully initialized and resolved before the claim call is attempted. Update the AdminLayout component to wait for the actor to be ready (non-null/non-undefined) before enabling or invoking the claimInitialAdmin call. If the actor is still loading, show a loading/spinner state on the button instead of attempting the call. Additionally, ensure the useActor hook or the mutation in useQueries.ts properly surfaces actor initialization errors so the UI can handle them gracefully.",
+      "reqIds": [
+        "REQ-25"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-rewrite-the-actor-initialization-and-admin-claim-flow-in-adminlayout-so-that-after-the-user-clicks-claim-admin-access-the-component-never-gets-stuck-in-a-perpetual-connecting-state-the-root-cause-is-that-the-actor-query-either-never-resolves-errors-silently-or-the-component-re-enters-a-loading-branch-after-the-claim-mutation-completes-fix-this-by-1-ensuring-the-useactor-hook-always-settles-resolves-or-rejects-and-never-stays-in-a-pending-state-indefinitely-2-after-claiminitialadmin-succeeds-explicitly-invalidating-and-re-fetching-the-isadmin-and-actor-queries-so-the-component-transitions-out-of-the-claim-prompt-into-the-dashboard-3-if-the-actor-is-not-yet-available-when-the-mutation-fires-surface-a-clear-error-rather-than-silently-recycling-back-to-the-connecting-ui-4-guard-the-connecting-spinner-with-a-timeout-e-g-15-seconds-after-which-an-error-message-is-shown-instead-of-spinning-forever",
+      "title": "Rewrite the actor initialization and admin-claim flow in AdminLayout so that after the user clicks 'Claim Admin Access', the component never gets stuck in a perpetual 'Connecting' state. The root cause is that the actor query either never resolves, errors silently, or the component re-enters a loading branch after the claim mutation completes. Fix this by: (1) ensuring the useActor hook always settles (resolves or rejects) and never stays in a pending state indefinitely; (2) after claimInitialAdmin succeeds, explicitly invalidating and re-fetching the isAdmin and actor queries so the component transitions out of the claim prompt into the dashboard; (3) if the actor is not yet available when the mutation fires, surface a clear error rather than silently recycling back to the 'Connecting' UI; (4) guard the 'Connecting' spinner with a timeout (e.g. 15 seconds) after which an error message is shown instead of spinning forever.",
+      "reqIds": [
+        "REQ-26"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-audit-and-fix-the-useactor-hook-so-it-always-settles-its-react-query-result-if-actor-initialization-fails-e-g-identity-not-ready-canister-unreachable-the-query-must-transition-to-an-error-state-rather-than-remaining-in-loading-pending-indefinitely-ensure-the-actor-is-re-initialized-and-the-query-is-re-fetched-when-the-internet-identity-changes-from-anonymous-to-authenticated",
+      "title": "Audit and fix the useActor hook so it always settles its React Query result. If actor initialization fails (e.g. identity not ready, canister unreachable), the query must transition to an 'error' state rather than remaining in 'loading' / 'pending' indefinitely. Ensure the actor is re-initialized and the query is re-fetched when the Internet Identity changes from anonymous to authenticated.",
+      "reqIds": [
+        "REQ-27"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-identify-and-resolve-all-compilation-or-build-errors-in-both-the-backend-motoko-and-frontend-react-typescript-that-caused-version-9-to-fail-deployment-the-codebase-must-compile-cleanly-and-deploy-successfully-to-production-without-errors",
+      "title": "Identify and resolve all compilation or build errors in both the backend (Motoko) and frontend (React/TypeScript) that caused Version 9 to fail deployment. The codebase must compile cleanly and deploy successfully to production without errors.",
+      "reqIds": [
+        "REQ-28"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-revert-any-changes-made-to-the-top-navigation-bar-navbar-and-the-hero-featured-article-section-of-the-homepage-that-were-introduced-in-the-most-recent-version-restore-them-to-exactly-how-they-appeared-in-the-version-prior-to-the-last-build-preserving-the-logo-category-links-layout-and-styling-of-the-top-navigation-and-hero-area-without-any-modifications",
+      "title": "Revert any changes made to the top navigation bar (Navbar) and the hero/featured article section of the homepage that were introduced in the most recent version. Restore them to exactly how they appeared in the version prior to the last build — preserving the logo, category links, layout, and styling of the top navigation and hero area without any modifications.",
+      "reqIds": [
+        "REQ-29"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-restore-the-hero-featured-article-section-on-the-homepage-to-exactly-the-design-it-had-in-version-6-7-this-includes-the-layout-image-sizing-headline-typography-category-tag-styling-summary-text-author-date-display-and-overall-visual-treatment-undo-any-structural-or-stylistic-changes-introduced-in-version-10-or-version-11-that-altered-the-hero-section-s-appearance",
+      "title": "Restore the hero/featured article section on the homepage to exactly the design it had in Version 6/7. This includes the layout, image sizing, headline typography, category tag styling, summary text, author/date display, and overall visual treatment. Undo any structural or stylistic changes introduced in Version 10 or Version 11 that altered the hero section's appearance.",
+      "reqIds": [
+        "REQ-31"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-restore-the-top-navigation-bar-navbar-to-exactly-the-design-layout-copy-and-styling-it-had-in-version-6-7-this-includes-the-inside-pet-tech-logo-placement-and-sizing-category-links-startups-funding-news-views-interviews-market-trends-with-their-exact-version-6-7-typography-spacing-colors-and-hover-states-and-any-other-visual-or-textual-details-present-in-version-6-7-remove-any-structural-stylistic-or-copy-changes-introduced-after-version-7",
+      "title": "Restore the top navigation bar (Navbar) to exactly the design, layout, copy, and styling it had in Version 6/7. This includes: the Inside Pet Tech logo placement and sizing, category links (Startups & Funding, News & Views, Interviews, Market Trends) with their exact Version 6/7 typography, spacing, colors, and hover states, and any other visual or textual details present in Version 6/7. Remove any structural, stylistic, or copy changes introduced after Version 7.",
+      "reqIds": [
+        "REQ-33"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-restore-the-homepage-hero-featured-article-section-to-exactly-the-design-layout-and-copy-it-had-in-version-6-7-this-includes-image-sizing-and-aspect-ratio-headline-typography-and-weight-category-tag-badge-styling-summary-text-wording-and-font-treatment-author-and-published-date-display-format-overall-section-background-padding-and-visual-treatment-remove-any-structural-stylistic-or-copy-changes-introduced-after-version-7",
+      "title": "Restore the homepage hero/featured article section to exactly the design, layout, and copy it had in Version 6/7. This includes: image sizing and aspect ratio, headline typography and weight, category tag badge styling, summary text wording and font treatment, author and published date display format, overall section background, padding, and visual treatment. Remove any structural, stylistic, or copy changes introduced after Version 7.",
+      "reqIds": [
+        "REQ-34"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-restore-all-remaining-public-facing-pages-and-sections-including-the-latest-news-grid-category-spotlight-sections-startups-funding-news-views-interviews-market-trends-the-about-page-the-contact-page-the-article-detail-page-and-the-category-listing-pages-to-exactly-the-design-layout-and-copy-they-had-in-version-6-7-this-includes-all-typography-colors-spacing-section-headers-card-layouts-button-styles-labels-and-body-copy-remove-any-visual-or-textual-changes-introduced-after-version-7-on-these-pages",
+      "title": "Restore all remaining public-facing pages and sections — including the Latest News grid, category spotlight sections (Startups & Funding, News & Views, Interviews, Market Trends), the About page, the Contact page, the article detail page, and the category listing pages — to exactly the design, layout, and copy they had in Version 6/7. This includes all typography, colors, spacing, section headers, card layouts, button styles, labels, and body copy. Remove any visual or textual changes introduced after Version 7 on these pages.",
+      "reqIds": [
+        "REQ-35"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-preserve-the-footer-section-exactly-as-it-exists-in-the-current-post-version-7-build-the-footer-must-retain-all-additions-made-after-version-7-including-the-newsletter-signup-section-about-and-contact-links-category-links-site-description-tagline-covering-the-companies-technology-and-ideas-reshaping-pet-care-and-the-caffeine-ai-attribution-badge-do-not-revert-the-footer-to-the-version-6-7-state",
+      "title": "Preserve the footer section exactly as it exists in the current (post-Version-7) build. The footer must retain all additions made after Version 7 — including the newsletter signup section, About and Contact links, category links, site description, tagline 'Covering the Companies, Technology, and Ideas Reshaping Pet Care', and the caffeine.ai attribution badge. Do not revert the footer to the Version 6/7 state.",
+      "reqIds": [
+        "REQ-36"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-restore-the-inside-pet-tech-logo-in-the-navbar-to-the-original-uploaded-logo-asset-at-frontend-public-assets-generated-inside-pet-tech-logo-png-the-current-version-13-build-replaced-the-custom-logo-with-a-generic-one-revert-the-navbar-logo-src-back-to-the-uploaded-asset-and-remove-any-generic-placeholder-logo-that-was-substituted",
+      "title": "Restore the Inside Pet Tech logo in the Navbar to the original uploaded logo asset at frontend/public/assets/generated/inside-pet-tech-logo.png. The current Version 13 build replaced the custom logo with a generic one — revert the Navbar logo src back to the uploaded asset and remove any generic/placeholder logo that was substituted.",
+      "reqIds": [
+        "REQ-37"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-rebuild-the-entire-public-facing-frontend-from-scratch-to-match-the-version-3-design-and-content-exactly-this-includes-the-top-navigation-bar-inside-pet-tech-logo-at-frontend-public-assets-generated-inside-pet-tech-logo-png-category-links-for-startups-funding-news-views-interviews-and-market-trends-no-admin-sign-in-links-visible-the-homepage-hero-featured-article-section-large-editorial-layout-showing-the-most-recent-featured-article-regardless-of-content-type-with-thumbnail-image-category-tag-headline-summary-author-and-published-date-the-latest-news-grid-recent-published-articles-with-thumbnail-category-tag-headline-summary-author-date-category-spotlight-sections-for-all-four-categories-startups-funding-news-views-interviews-market-trends-with-section-headers-and-article-cards-the-about-page-at-about-the-contact-page-at-contact-with-advertising-opportunity-mention-the-article-detail-page-and-the-category-listing-pages-all-typography-playfair-display-headlines-inter-body-colors-deep-crimson-to-indigo-gradient-accents-off-white-light-gray-background-dark-near-black-text-spacing-card-layouts-button-styles-section-headers-and-body-copy-must-match-version-3",
+      "title": "Rebuild the entire public-facing frontend from scratch to match the Version 3 design and content exactly. This includes: the top navigation bar (Inside Pet Tech logo at frontend/public/assets/generated/inside-pet-tech-logo.png, category links for Startups & Funding, News & Views, Interviews, and Market Trends, no admin/sign-in links visible), the homepage hero/featured article section (large editorial layout showing the most recent featured article regardless of content type, with thumbnail image, category tag, headline, summary, author, and published date), the Latest News grid (recent published articles with thumbnail, category tag, headline, summary, author, date), category spotlight sections for all four categories (Startups & Funding, News & Views, Interviews, Market Trends) with section headers and article cards, the About page at /about, the Contact page at /contact with advertising opportunity mention, the article detail page, and the category listing pages. All typography (Playfair Display headlines, Inter body), colors (deep crimson-to-indigo gradient accents, off-white/light-gray background, dark near-black text), spacing, card layouts, button styles, section headers, and body copy must match Version 3.",
+      "reqIds": [
+        "REQ-38"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-preserve-the-current-post-version-7-footer-exactly-as-is-in-the-rebuilt-site-the-footer-must-include-the-newsletter-signup-section-email-input-wired-to-the-subscribetonewsletter-backend-call-about-and-contact-page-links-all-four-category-links-startups-funding-news-views-interviews-market-trends-site-description-tagline-covering-the-companies-technology-and-ideas-reshaping-pet-care-and-the-caffeine-ai-attribution-badge-do-not-revert-the-footer-to-the-version-3-state",
+      "title": "Preserve the current post-Version-7 footer exactly as-is in the rebuilt site. The footer must include: the newsletter signup section (email input wired to the subscribeToNewsletter backend call), About and Contact page links, all four category links (Startups & Funding, News & Views, Interviews, Market Trends), site description, tagline 'Covering the Companies, Technology, and Ideas Reshaping Pet Care', and the caffeine.ai attribution badge. Do not revert the footer to the Version 3 state.",
+      "reqIds": [
+        "REQ-39"
       ],
       "version": 1
     }
@@ -274,6 +393,56 @@
       "id": "AR-30",
       "summary": "Ensure 'News & Views' category section appears in the homepage bottom sections alongside Startups & Funding, Interviews, and Market Trends.",
       "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-31",
+      "summary": "Add a first-run admin setup so the first person to log in (or the canister deployer) is automatically granted admin access, fixing the issue where no principal has admin authority after deployment.",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-32",
+      "summary": "Add a first-run admin claim mechanism to the backend. If no admin principals have been registered yet, expose a public function (e.g., `claimInitialAdmin`) that allows the caller to register themselves as the first admin. Once at least one admin exists, this function must become a no-op (or reject with an error) so it cannot be abused after initial setup.",
+      "reqIds": [
+        "REQ-23"
+      ],
+      "status": "pending"
+    },
+    {
+      "id": "AR-33",
+      "summary": "Restore the top navigation bar (Navbar) to exactly the design it had in Version 6/7. This includes the logo placement, category links (Startups & Funding, News & Views, Interviews, Market Trends), layout, spacing, typography, colors, and any other visual styling. Undo any structural or stylistic changes introduced in Version 10 or Version 11 that altered the Navbar's appearance.",
+      "reqIds": [
+        "REQ-30"
+      ],
+      "status": "pending"
+    },
+    {
+      "id": "AR-35",
+      "summary": "Preserve the new footer section (newsletter signup and any other footer additions) that was added in Version 11. The footer must retain all additions from Version 11 — including the newsletter signup section, About and Contact links, category links, site description, tagline, and the caffeine.ai attribution badge — while the Navbar and hero section are reverted to Version 6/7.",
+      "reqIds": [
+        "REQ-32"
+      ],
+      "status": "pending"
+    },
+    {
+      "id": "AR-36",
+      "summary": "Restore the Inside Pet Tech logo in the Navbar — the custom logo was replaced with a generic one in Version 13 and must be restored to the original uploaded logo asset.",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-37",
+      "summary": "Full revert to Version 3 design and content across the entire site, keeping only the current footer section (newsletter signup, About/Contact links, category links, site description, tagline, caffeine.ai badge). Version 14 removed too much of the site.",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-40",
+      "summary": "Ensure the backend Motoko actor is fully intact and compatible with the rebuilt frontend. The actor must expose all required endpoints: article CRUD (createArticle, updateArticle, deleteArticle, publishArticle, archiveArticle, getPublishedArticles, getFeaturedArticles, getArticleBySlug, getArticlesByCategory, getAllArticles), admin management (addAdmin, removeAdmin, isAdmin, claimInitialAdmin), newsletter subscription (subscribeToNewsletter, getNewsletterSubscribers), and user profile (saveCallerUserProfile, getCallerUserProfile). The backend must retain its existing seeded sample articles so the site renders populated content on first load.",
+      "reqIds": [
+        "REQ-40"
+      ],
       "status": "pending"
     }
   ],

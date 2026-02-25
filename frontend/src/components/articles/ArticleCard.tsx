@@ -1,13 +1,7 @@
-import React from 'react';
 import { Link } from '@tanstack/react-router';
-import { Article } from '../../backend';
-import {
-  CATEGORY_LABELS,
-  CATEGORY_SLUGS,
-  CATEGORY_GRADIENT_CLASSES,
-  CONTENT_TYPE_LABELS,
-  formatDateShort,
-} from '../../lib/utils';
+import { Article } from '@/backend';
+import { formatDate, categoryLabel, categorySlug, contentTypeLabel } from '@/lib/utils';
+import { Calendar, User } from 'lucide-react';
 
 interface ArticleCardProps {
   article: Article;
@@ -15,118 +9,139 @@ interface ArticleCardProps {
 }
 
 export default function ArticleCard({ article, variant = 'default' }: ArticleCardProps) {
-  const gradientClass = CATEGORY_GRADIENT_CLASSES[article.category];
+  const catLabel = categoryLabel(article.category);
+  const catSlug = categorySlug(article.category);
+  const ctLabel = contentTypeLabel(article.contentType);
   const thumbnail = article.thumbnailUrl || '/assets/generated/article-thumb-default.dim_600x400.png';
-
-  if (variant === 'compact') {
-    return (
-      <Link
-        to="/article/$slug"
-        params={{ slug: article.slug }}
-        className="group flex gap-3 items-start"
-      >
-        <div className="w-20 h-16 shrink-0 overflow-hidden rounded-sm bg-muted">
-          <img
-            src={thumbnail}
-            alt={article.title}
-            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-            onError={(e) => {
-              (e.target as HTMLImageElement).src = '/assets/generated/article-thumb-default.dim_600x400.png';
-            }}
-          />
-        </div>
-        <div className="flex-1 min-w-0">
-          <span className={`inline-block text-[10px] font-semibold uppercase tracking-wider text-white px-1.5 py-0.5 rounded-sm bg-gradient-to-r ${gradientClass} mb-1`}>
-            {CATEGORY_LABELS[article.category]}
-          </span>
-          <h4 className="text-sm font-serif font-semibold text-foreground group-hover:text-brand-crimson transition-colors line-clamp-2 leading-snug">
-            {article.title}
-          </h4>
-          <p className="text-xs text-muted-foreground mt-0.5">{formatDateShort(article.publishedAt)}</p>
-        </div>
-      </Link>
-    );
-  }
 
   if (variant === 'featured') {
     return (
-      <Link
-        to="/article/$slug"
-        params={{ slug: article.slug }}
-        className="group block relative overflow-hidden rounded-lg editorial-shadow-lg"
-      >
-        <div className="aspect-[16/9] overflow-hidden bg-muted">
-          <img
-            src={thumbnail}
-            alt={article.title}
-            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-            onError={(e) => {
-              (e.target as HTMLImageElement).src = '/assets/generated/hero-placeholder.dim_1200x600.png';
-            }}
-          />
-        </div>
-        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent" />
-        <div className="absolute bottom-0 left-0 right-0 p-6">
-          <div className="flex items-center gap-2 mb-2">
-            <span className={`inline-block text-[10px] font-semibold uppercase tracking-wider text-white px-2 py-0.5 rounded-sm bg-gradient-to-r ${gradientClass}`}>
-              {CATEGORY_LABELS[article.category]}
-            </span>
-            <span className="text-[10px] font-medium uppercase tracking-wider text-white/70">
-              {CONTENT_TYPE_LABELS[article.contentType]}
-            </span>
+      <article className="group relative overflow-hidden rounded-lg bg-slate-800 shadow-editorial-lg">
+        <Link to="/article/$id" params={{ id: article.id }}>
+          <div className="relative aspect-[16/9] overflow-hidden">
+            <img
+              src={thumbnail}
+              alt={article.title}
+              className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+            />
+            <div className="absolute inset-0 bg-gradient-to-t from-slate-900 via-slate-900/50 to-transparent" />
+            <div className="absolute bottom-0 left-0 right-0 p-6">
+              <div className="flex items-center gap-2 mb-3">
+                <Link
+                  to="/category/$slug"
+                  params={{ slug: catSlug }}
+                  className="px-2.5 py-1 bg-crimson-600 text-white text-xs font-semibold uppercase tracking-wider rounded"
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  {catLabel}
+                </Link>
+                <span className="px-2.5 py-1 bg-slate-700/80 text-slate-300 text-xs font-medium rounded">
+                  {ctLabel}
+                </span>
+              </div>
+              <h2 className="font-display text-2xl md:text-3xl font-bold text-white leading-tight mb-3 group-hover:text-crimson-300 transition-colors">
+                {article.title}
+              </h2>
+              <p className="text-slate-300 text-sm leading-relaxed mb-4 line-clamp-2">
+                {article.summary}
+              </p>
+              <div className="flex items-center gap-4 text-slate-400 text-xs">
+                <span className="flex items-center gap-1.5">
+                  <User className="h-3.5 w-3.5" />
+                  {article.author}
+                </span>
+                {article.publishedAt && (
+                  <span className="flex items-center gap-1.5">
+                    <Calendar className="h-3.5 w-3.5" />
+                    {formatDate(article.publishedAt)}
+                  </span>
+                )}
+              </div>
+            </div>
           </div>
-          <h2 className="text-xl sm:text-2xl font-serif font-bold text-white leading-tight mb-2">
-            {article.title}
-          </h2>
-          <p className="text-sm text-white/80 line-clamp-2 mb-3">{article.summary}</p>
-          <div className="flex items-center gap-2 text-xs text-white/60">
-            <span>{article.author}</span>
-            <span>·</span>
-            <span>{formatDateShort(article.publishedAt)}</span>
-          </div>
-        </div>
-      </Link>
+        </Link>
+      </article>
     );
   }
 
-  // Default card
+  if (variant === 'compact') {
+    return (
+      <article className="group flex gap-4 py-4 border-b border-slate-200 last:border-0">
+        <Link to="/article/$id" params={{ id: article.id }} className="flex-shrink-0">
+          <div className="w-20 h-20 overflow-hidden rounded">
+            <img
+              src={thumbnail}
+              alt={article.title}
+              className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+            />
+          </div>
+        </Link>
+        <div className="flex-1 min-w-0">
+          <Link
+            to="/category/$slug"
+            params={{ slug: catSlug }}
+            className="text-crimson-600 text-xs font-semibold uppercase tracking-wider hover:text-crimson-700"
+          >
+            {catLabel}
+          </Link>
+          <Link to="/article/$id" params={{ id: article.id }}>
+            <h3 className="font-display text-sm font-bold text-slate-900 leading-snug mt-1 group-hover:text-crimson-700 transition-colors line-clamp-2">
+              {article.title}
+            </h3>
+          </Link>
+          {article.publishedAt && (
+            <p className="text-slate-500 text-xs mt-1">{formatDate(article.publishedAt)}</p>
+          )}
+        </div>
+      </article>
+    );
+  }
+
+  // Default variant
   return (
-    <Link
-      to="/article/$slug"
-      params={{ slug: article.slug }}
-      className="group block bg-card rounded-lg overflow-hidden editorial-shadow hover:editorial-shadow-lg transition-shadow duration-200"
-    >
-      <div className="aspect-[16/10] overflow-hidden bg-muted">
-        <img
-          src={thumbnail}
-          alt={article.title}
-          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-          onError={(e) => {
-            (e.target as HTMLImageElement).src = '/assets/generated/article-thumb-default.dim_600x400.png';
-          }}
-        />
-      </div>
-      <div className="p-4">
-        <div className="flex items-center gap-2 mb-2">
-          <span className={`inline-block text-[10px] font-semibold uppercase tracking-wider text-white px-2 py-0.5 rounded-sm bg-gradient-to-r ${gradientClass}`}>
-            {CATEGORY_LABELS[article.category]}
+    <article className="group bg-white rounded-lg overflow-hidden shadow-sm hover:shadow-editorial transition-shadow duration-300 border border-slate-100">
+      <Link to="/article/$id" params={{ id: article.id }}>
+        <div className="relative aspect-[16/9] overflow-hidden">
+          <img
+            src={thumbnail}
+            alt={article.title}
+            className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+          />
+        </div>
+      </Link>
+      <div className="p-5">
+        <div className="flex items-center gap-2 mb-3">
+          <Link
+            to="/category/$slug"
+            params={{ slug: catSlug }}
+            className="text-crimson-600 text-xs font-semibold uppercase tracking-wider hover:text-crimson-700"
+          >
+            {catLabel}
+          </Link>
+          <span className="text-slate-300">·</span>
+          <span className="text-slate-500 text-xs">{ctLabel}</span>
+        </div>
+        <Link to="/article/$id" params={{ id: article.id }}>
+          <h3 className="font-display text-lg font-bold text-slate-900 leading-snug mb-2 group-hover:text-crimson-700 transition-colors line-clamp-2">
+            {article.title}
+          </h3>
+        </Link>
+        <p className="text-slate-600 text-sm leading-relaxed mb-4 line-clamp-3">
+          {article.summary}
+        </p>
+        <div className="flex items-center gap-3 text-slate-500 text-xs">
+          <span className="flex items-center gap-1.5">
+            <User className="h-3.5 w-3.5" />
+            {article.author}
           </span>
-          {article.contentType !== 'article' && (
-            <span className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground">
-              {CONTENT_TYPE_LABELS[article.contentType]}
+          {article.publishedAt && (
+            <span className="flex items-center gap-1.5">
+              <Calendar className="h-3.5 w-3.5" />
+              {formatDate(article.publishedAt)}
             </span>
           )}
         </div>
-        <h3 className="font-serif font-semibold text-foreground group-hover:text-brand-crimson transition-colors line-clamp-2 leading-snug mb-2">
-          {article.title}
-        </h3>
-        <p className="text-sm text-muted-foreground line-clamp-2 mb-3">{article.summary}</p>
-        <div className="flex items-center gap-2 text-xs text-muted-foreground">
-          <span className="font-medium">{article.author}</span>
-          <span>·</span>
-          <span>{formatDateShort(article.publishedAt)}</span>
-        </div>
       </div>
-    </Link>
+    </article>
   );
 }
