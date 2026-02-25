@@ -2,8 +2,8 @@
   "kind": "feature_evidence_report",
   "features": [
     {
-      "featureId": "feature-replace-the-top-hero-video-section-on-the-homepage-with-a-generic-featured-article-section-instead-of-only-displaying-video-content-types-it-should-display-the-most-recent-featured-article-regardless-of-content-type-article-feature-story-interview-or-video-the-section-should-show-the-article-s-thumbnail-image-category-tag-headline-summary-author-and-published-date-in-a-large-editorial-hero-layout-if-the-featured-article-is-of-type-video-the-thumbnail-should-still-be-used-no-forced-video-embed-at-the-top",
-      "featureTitle": "Replace the top hero/video section on the homepage with a generic featured article section. Instead of only displaying video content types, it should display the most recent featured article regardless of content type (Article, Feature Story, Interview, or Video). The section should show the article's thumbnail image, category tag, headline, summary, author, and published date in a large editorial hero layout. If the featured article is of type Video, the thumbnail should still be used (no forced video embed at the top).",
+      "featureId": "feature-add-a-news-views-category-section-to-the-homepage-bottom-sections-so-that-all-four-categories-startups-funding-news-views-interviews-and-market-trends-are-displayed-the-news-views-section-must-follow-the-same-layout-and-styling-as-the-other-three-category-sections-section-header-with-more-link-article-cards-with-thumbnail-category-tag-headline-and-date",
+      "featureTitle": "Add a 'News & Views' category section to the homepage bottom sections so that all four categories — Startups & Funding, News & Views, Interviews, and Market Trends — are displayed. The News & Views section must follow the same layout and styling as the other three category sections (section header with 'More' link, article cards with thumbnail, category tag, headline, and date).",
       "files": [
         "frontend/src/pages/HomePage.tsx"
       ],
@@ -17,7 +17,7 @@
         "github-export-icp-cli@1.0.0"
       ],
       "testIds": [
-        "REQ-10"
+        "REQ-22"
       ],
       "confidence": "high"
     }

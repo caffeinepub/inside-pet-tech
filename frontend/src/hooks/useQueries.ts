@@ -1,6 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useActor } from './useActor';
-import { Article, Category, UserProfile } from '../backend';
+import { Article, Category, UserProfile, NewsletterSubscription } from '../backend';
 
 // ── Public Queries ──────────────────────────────────────────────────────────
 
@@ -204,5 +204,29 @@ export function useSaveCallerUserProfile() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['currentUserProfile'] });
     },
+  });
+}
+
+// ── Newsletter ──────────────────────────────────────────────────────────────
+
+export function useSubscribeToNewsletter() {
+  const { actor } = useActor();
+  return useMutation({
+    mutationFn: async (email: string) => {
+      if (!actor) throw new Error('Actor not available');
+      return actor.subscribeToNewsletter(email);
+    },
+  });
+}
+
+export function useGetAllNewsletterSubscribers() {
+  const { actor, isFetching } = useActor();
+  return useQuery<NewsletterSubscription[]>({
+    queryKey: ['newsletterSubscribers'],
+    queryFn: async () => {
+      if (!actor) return [];
+      return actor.getAllNewsletterSubscribers();
+    },
+    enabled: !!actor && !isFetching,
   });
 }

@@ -9,6 +9,8 @@ import AccessControl "authorization/access-control";
 import MixinStorage "blob-storage/Mixin";
 import Storage "blob-storage/Storage";
 
+
+
 actor {
   // ── Mixins ──────────────────────────────────────────────────────────────────
   include MixinStorage();
@@ -20,12 +22,9 @@ actor {
   // ── Types ───────────────────────────────────────────────────────────────────
   public type Category = {
     #startupsAndFunding;
-    #aiAndData;
-    #veterinaryTech;
-    #connectedDevices;
     #marketTrends;
     #interviews;
-    #videos;
+    #newsAndViews;
   };
 
   public type ContentType = {
@@ -62,9 +61,15 @@ actor {
     bio : Text;
   };
 
+  public type NewsletterSubscription = {
+    email : Text;
+    timestamp : Int;
+  };
+
   // ── State ───────────────────────────────────────────────────────────────────
   let articles = Map.empty<Text, Article>();
   let userProfiles = Map.empty<Principal, UserProfile>();
+  let newsletterSubscribers = Map.empty<Text, NewsletterSubscription>();
 
   // ── User Profile Functions ──────────────────────────────────────────────────
 
@@ -91,14 +96,10 @@ actor {
 
   // ── Admin Role Management ───────────────────────────────────────────────────
 
-  /// Assign the #admin role to a principal.
-  /// AccessControl.assignRole already enforces that only admins can call this.
   public shared ({ caller }) func addAdminPrincipal(user : Principal) : async () {
     AccessControl.assignRole(accessControlState, caller, user, #admin);
   };
 
-  /// Demote a principal back to #guest.
-  /// AccessControl.assignRole already enforces that only admins can call this.
   public shared ({ caller }) func removeAdminPrincipal(user : Principal) : async () {
     AccessControl.assignRole(accessControlState, caller, user, #guest);
   };
@@ -225,6 +226,26 @@ actor {
     );
   };
 
+  // ── Newsletter Signup (Public) ──────────────────────────────────────────────
+
+  public shared ({ caller }) func subscribeToNewsletter(email : Text) : async () {
+    if (email.size() == 0 or not email.contains(#text "@")) {
+      Runtime.trap("Invalid email address");
+    };
+    let subscription : NewsletterSubscription = {
+      email;
+      timestamp = Time.now();
+    };
+    newsletterSubscribers.add(email, subscription);
+  };
+
+  public query ({ caller }) func getAllNewsletterSubscribers() : async [NewsletterSubscription] {
+    if (not AccessControl.hasPermission(accessControlState, caller, #admin)) {
+      Runtime.trap("Unauthorized: Only admins can view subscribers");
+    };
+    newsletterSubscribers.values().toArray();
+  };
+
   // ── Seed Data ───────────────────────────────────────────────────────────────
 
   let sampleArticles : [Article] = [
@@ -245,36 +266,6 @@ actor {
     },
     {
       id = "2";
-      title = "AI in Veterinary Care";
-      slug = "ai-in-veterinary-care";
-      summary = "How artificial intelligence is transforming veterinary practices worldwide.";
-      body = "<p>Veterinary clinics are increasingly adopting AI-powered diagnostic tools that can detect diseases earlier and with greater accuracy than traditional methods.</p>";
-      author = "Dr. John Doe";
-      category = #aiAndData;
-      contentType = #article;
-      thumbnailUrl = "https://images.unsplash.com/photo-1576091160550-2173dba999ef?w=800";
-      videoUrl = null;
-      publishedAt = ?1_700_100_000_000_000_000;
-      status = #published;
-      featured = false;
-    },
-    {
-      id = "3";
-      title = "Wearable Tech for Pets";
-      slug = "wearable-tech-for-pets";
-      summary = "Exploring smart collars, GPS trackers, and health monitors for animals.";
-      body = "<p>Pet owners are rapidly adopting wearable technology to monitor their animals' health, location, and activity levels in real time.</p>";
-      author = "Samantha Lee";
-      category = #connectedDevices;
-      contentType = #featureStory;
-      thumbnailUrl = "https://images.unsplash.com/photo-1548199973-03cce0bbc87b?w=800";
-      videoUrl = null;
-      publishedAt = ?1_700_200_000_000_000_000;
-      status = #published;
-      featured = true;
-    },
-    {
-      id = "4";
       title = "Vet Tech Startup Interview";
       slug = "vet-tech-startup-interview";
       summary = "Exclusive interview with the CEO of PetTech on the future of animal healthcare.";
@@ -289,7 +280,7 @@ actor {
       featured = false;
     },
     {
-      id = "5";
+      id = "3";
       title = "Market Trends in Pet Tech 2024";
       slug = "market-trends-pet-tech-2024";
       summary = "Analyzing the explosive growth of the global pet technology market.";
@@ -304,32 +295,17 @@ actor {
       featured = false;
     },
     {
-      id = "6";
-      title = "Smart Feeders Explained";
-      slug = "smart-feeders-explained";
-      summary = "A comprehensive guide to modern automated pet feeders and their benefits.";
-      body = "<p>This guide covers the top smart feeders on the market, their features, connectivity options, and how they can improve your pet's nutrition and routine.</p>";
-      author = "Michael Reed";
-      category = #veterinaryTech;
+      id = "4";
+      title = "News & Views Feature";
+      slug = "news-views-feature";
+      summary = "A comprehensive overview of recent developments and opinions in the pet tech industry.";
+      body = "<p>This feature covers the latest news and expert viewpoints shaping the future of pet technology.</p>";
+      author = "Kelly Brown";
+      category = #newsAndViews;
       contentType = #article;
       thumbnailUrl = "https://images.unsplash.com/photo-1601758124510-52d02ddb7cbd?w=800";
       videoUrl = null;
-      publishedAt = ?1_700_500_000_000_000_000;
-      status = #published;
-      featured = false;
-    },
-    {
-      id = "7";
-      title = "Inside the Pet Tech Revolution — Video Tour";
-      slug = "pet-tech-revolution-video-tour";
-      summary = "A video walkthrough of the most exciting pet technology products of the year.";
-      body = "<p>Join our correspondent for an exclusive video tour of the latest innovations showcased at the Global Pet Tech Expo.</p>";
-      author = "Laura Nguyen";
-      category = #videos;
-      contentType = #video;
-      thumbnailUrl = "https://images.unsplash.com/photo-1560807707-8cc77767d783?w=800";
-      videoUrl = ?"https://example.com/pet-tech-revolution.mp4";
-      publishedAt = ?1_700_600_000_000_000_000;
+      publishedAt = ?1_700_550_000_000_000_000;
       status = #published;
       featured = true;
     },

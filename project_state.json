@@ -1,13 +1,18 @@
 {
   "schemaVersion": "1.0.0",
-  "projectStateVersion": 5,
-  "summary": "A news website called 'Inside Pet Tech' dedicated to the Pet Tech industry. Modeled after Retail Dive, it will feature news stories, articles, interviews, and videos about companies, technology, and ideas reshaping pet care. Includes a strong back-end content moderation system for easy article uploads. Target audience: founders, executives, veterinarians, investors, and operators.",
+  "projectStateVersion": 13,
+  "summary": "A news website called 'Inside Pet Tech' dedicated to the Pet Tech industry. Modeled after Retail Dive, it features news stories, articles, interviews, and videos about companies, technology, and ideas reshaping pet care. Includes a strong back-end content moderation system for easy article uploads. Target audience: founders, executives, veterinarians, investors, and operators. Categories are being simplified to: Startups & Funding, News & Views, Interviews, and Market Trends.",
   "architectural_notes": [
     "Site should follow an editorial news layout inspired by Retail Dive",
-    "Content management system needed for back-end article upload and moderation"
+    "Content management system needed for back-end article upload and moderation",
+    "Admin/sign-in page must not be publicly linked or visible in navigation — only accessible to insiders and reporters",
+    "Core editorial categories simplified to: Startups & Funding, News & Views, Interviews, Market Trends"
   ],
-  "known_issues": [],
-  "isFixRequest": false,
+  "known_issues": [
+    "About page and Contact page are not visibly accessible/navigable from the public site",
+    "News & Views category section is missing from the homepage bottom category sections (only Startups & Funding, Interviews, and Market Trends appear)"
+  ],
+  "isFixRequest": true,
   "existing_features": [
     {
       "id": "feature-build-a-public-facing-homepage-modeled-after-retail-dive-s-editorial-layout-it-must-include-a-top-navigation-bar-with-the-inside-pet-tech-logo-and-category-links-a-hero-featured-story-section-showcasing-the-most-recent-featured-article-with-large-image-and-headline-a-latest-news-grid-of-recent-published-articles-thumbnail-category-tag-headline-summary-author-date-a-feature-stories-horizontal-scroll-or-section-a-videos-section-if-video-articles-exist-and-a-footer-with-site-description-category-links-and-tagline-covering-the-companies-technology-and-ideas-reshaping-pet-care",
@@ -62,6 +67,78 @@
       "title": "Replace the top hero/video section on the homepage with a generic featured article section. Instead of only displaying video content types, it should display the most recent featured article regardless of content type (Article, Feature Story, Interview, or Video). The section should show the article's thumbnail image, category tag, headline, summary, author, and published date in a large editorial hero layout. If the featured article is of type Video, the thumbnail should still be used (no forced video embed at the top).",
       "reqIds": [
         "REQ-10"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-create-an-about-page-at-about-describing-inside-pet-tech-its-mission-editorial-focus-and-target-audience-founders-executives-veterinarians-investors-and-operators-in-the-pet-tech-industry-style-it-consistently-with-the-site-s-editorial-theme",
+      "title": "Create an About page at /about describing Inside Pet Tech, its mission, editorial focus, and target audience (founders, executives, veterinarians, investors, and operators in the pet tech industry). Style it consistently with the site's editorial theme.",
+      "reqIds": [
+        "REQ-13"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-create-a-contact-page-at-contact-with-publication-contact-information-and-a-contact-form-the-form-should-collect-name-email-subject-and-message-fields-with-basic-client-side-validation-style-it-consistently-with-the-site-s-editorial-theme",
+      "title": "Create a Contact page at /contact with publication contact information and a contact form. The form should collect name, email, subject, and message fields with basic client-side validation. Style it consistently with the site's editorial theme.",
+      "reqIds": [
+        "REQ-14"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-add-a-newsletter-signup-section-to-the-site-footer-or-as-a-dedicated-section-just-above-the-footer-the-section-should-allow-visitors-to-enter-their-email-address-and-subscribe-store-newsletter-subscriber-emails-in-the-backend-with-a-timestamp-expose-a-backend-function-to-subscribe-an-email-and-a-function-to-list-all-subscribers-admin-only",
+      "title": "Add a newsletter signup section to the site footer (or as a dedicated section just above the footer). The section should allow visitors to enter their email address and subscribe. Store newsletter subscriber emails in the backend with a timestamp. Expose a backend function to subscribe an email and a function to list all subscribers (admin-only).",
+      "reqIds": [
+        "REQ-15"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-add-about-and-contact-page-links-to-the-site-footer-s-navigation-links-section-alongside-existing-category-links",
+      "title": "Add About and Contact page links to the site footer's navigation links section, alongside existing category links.",
+      "reqIds": [
+        "REQ-17"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-add-visible-navigation-links-to-the-about-page-about-and-contact-page-contact-in-the-site-s-top-navigation-bar-navbar-so-visitors-can-easily-discover-and-access-these-pages-from-any-page-on-the-site",
+      "title": "Add visible navigation links to the About page (/about) and Contact page (/contact) in the site's top navigation bar (Navbar) so visitors can easily discover and access these pages from any page on the site.",
+      "reqIds": [
+        "REQ-18"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-remove-the-internet-identity-sign-in-button-and-any-admin-login-entry-points-from-all-public-facing-navigation-navbar-footer-and-any-public-pages-the-admin-sign-in-flow-should-only-be-reachable-by-directly-navigating-to-admin-it-must-not-be-linked-displayed-or-discoverable-by-general-site-visitors",
+      "title": "Remove the Internet Identity sign-in button and any admin login entry points from all public-facing navigation (Navbar, Footer, and any public pages). The admin/sign-in flow should only be reachable by directly navigating to /admin — it must not be linked, displayed, or discoverable by general site visitors.",
+      "reqIds": [
+        "REQ-19"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-add-a-brief-mention-of-advertising-opportunities-to-the-contact-page-contact-this-should-appear-as-a-short-paragraph-or-callout-within-the-existing-contact-information-section-noting-that-a-variety-of-advertising-opportunities-are-available-and-inviting-interested-parties-to-reach-out-for-more-information",
+      "title": "Add a brief mention of advertising opportunities to the Contact page (/contact). This should appear as a short paragraph or callout within the existing contact information section, noting that a variety of advertising opportunities are available and inviting interested parties to reach out for more information.",
+      "reqIds": [
+        "REQ-20"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-simplify-the-editorial-categories-from-six-to-four-core-categories-startups-funding-news-views-interviews-and-market-trends-remove-ai-data-veterinary-tech-connected-devices-and-videos-as-standalone-categories-update-the-backend-category-enum-to-reflect-only-these-four-categories-update-all-frontend-references-including-the-top-navigation-bar-category-links-footer-category-links-category-pages-article-editor-category-dropdown-and-any-category-label-slug-lookup-maps-in-utils",
+      "title": "Simplify the editorial categories from six to four core categories: 'Startups & Funding', 'News & Views', 'Interviews', and 'Market Trends'. Remove 'AI & Data', 'Veterinary Tech', 'Connected Devices', and 'Videos' as standalone categories. Update the backend Category enum to reflect only these four categories. Update all frontend references including the top navigation bar category links, footer category links, category pages, article editor category dropdown, and any category label/slug lookup maps in utils.",
+      "reqIds": [
+        "REQ-21"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-add-a-news-views-category-section-to-the-homepage-bottom-sections-so-that-all-four-categories-startups-funding-news-views-interviews-and-market-trends-are-displayed-the-news-views-section-must-follow-the-same-layout-and-styling-as-the-other-three-category-sections-section-header-with-more-link-article-cards-with-thumbnail-category-tag-headline-and-date",
+      "title": "Add a 'News & Views' category section to the homepage bottom sections so that all four categories — Startups & Funding, News & Views, Interviews, and Market Trends — are displayed. The News & Views section must follow the same layout and styling as the other three category sections (section header with 'More' link, article cards with thumbnail, category tag, headline, and date).",
+      "reqIds": [
+        "REQ-22"
       ],
       "version": 1
     }
@@ -147,6 +224,56 @@
       "reqIds": [
         "REQ-12"
       ],
+      "status": "pending"
+    },
+    {
+      "id": "AR-20",
+      "summary": "Create an About page describing Inside Pet Tech, its mission, and target audience.",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-21",
+      "summary": "Create a Contact page with a contact form or contact information for the publication.",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-22",
+      "summary": "Add a newsletter signup section at the bottom of the site (footer or dedicated section) allowing visitors to subscribe with their email.",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-26",
+      "summary": "Ensure the backend Motoko actor fully supports all admin content management operations: create, update, delete, publish, and archive articles. Enforce role-based access control (admin principal checks) on all mutating operations. Expose addAdmin and removeAdmin functions. Seed the backend with at least 6 sample published articles spanning all categories (Startups & Funding, AI & Data, Veterinary Tech, Connected Devices, Market Trends, Interviews) and content types (Article, Feature Story, Interview, Video), with at least one article marked as featured, realistic pet tech titles/summaries/authors, and plausible thumbnail URLs.",
+      "reqIds": [
+        "REQ-16"
+      ],
+      "status": "pending"
+    },
+    {
+      "id": "AR-27",
+      "summary": "Make the sign-in/admin login page non-public (hidden from general visitors). It should only be accessible to insiders and reporters, not linked or visible in public navigation.",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-28",
+      "summary": "Add a mention of advertising opportunities to the Contact page.",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-29",
+      "summary": "Simplify editorial categories to four core categories: Startups & Funding, News & Views, Interviews, and Market Trends. Update all category references across the site (navigation, category pages, article forms, backend enums, and seed data).",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-30",
+      "summary": "Ensure 'News & Views' category section appears in the homepage bottom sections alongside Startups & Funding, Interviews, and Market Trends.",
+      "reqIds": [],
       "status": "pending"
     }
   ],

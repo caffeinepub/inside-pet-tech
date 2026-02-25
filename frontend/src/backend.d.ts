@@ -22,6 +22,10 @@ export interface Article {
     category: Category;
     videoUrl?: string;
 }
+export interface NewsletterSubscription {
+    email: string;
+    timestamp: bigint;
+}
 export interface UserProfile {
     bio: string;
     name: string;
@@ -32,13 +36,10 @@ export enum ArticleStatus {
     archived = "archived"
 }
 export enum Category {
-    connectedDevices = "connectedDevices",
+    newsAndViews = "newsAndViews",
     marketTrends = "marketTrends",
     interviews = "interviews",
-    aiAndData = "aiAndData",
-    startupsAndFunding = "startupsAndFunding",
-    veterinaryTech = "veterinaryTech",
-    videos = "videos"
+    startupsAndFunding = "startupsAndFunding"
 }
 export enum ContentType {
     video = "video",
@@ -52,10 +53,6 @@ export enum UserRole {
     guest = "guest"
 }
 export interface backendInterface {
-    /**
-     * / Assign the #admin role to a principal.
-     * / AccessControl.assignRole already enforces that only admins can call this.
-     */
     addAdminPrincipal(user: Principal): Promise<void>;
     archiveArticle(id: string): Promise<void>;
     assignCallerUserRole(user: Principal, role: UserRole): Promise<void>;
@@ -65,6 +62,7 @@ export interface backendInterface {
      * / Returns ALL articles (including drafts/archived) — admin only.
      */
     getAllArticles(): Promise<Array<Article>>;
+    getAllNewsletterSubscribers(): Promise<Array<NewsletterSubscription>>;
     /**
      * / Returns a single article by id.
      * / Admins can see any status; others only see published.
@@ -91,15 +89,12 @@ export interface backendInterface {
     getUserProfile(user: Principal): Promise<UserProfile | null>;
     isCallerAdmin(): Promise<boolean>;
     publishArticle(id: string): Promise<void>;
-    /**
-     * / Demote a principal back to #guest.
-     * / AccessControl.assignRole already enforces that only admins can call this.
-     */
     removeAdminPrincipal(user: Principal): Promise<void>;
     saveCallerUserProfile(profile: UserProfile): Promise<void>;
     /**
      * / Full-text search on title among published articles — public.
      */
     searchArticlesByTitle(searchTerm: string): Promise<Array<Article>>;
+    subscribeToNewsletter(email: string): Promise<void>;
     updateArticle(id: string, updatedArticle: Article): Promise<void>;
 }

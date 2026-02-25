@@ -3,15 +3,13 @@ import { Link } from '@tanstack/react-router';
 import { Heart } from 'lucide-react';
 import { Category } from '../../backend';
 import { CATEGORY_LABELS, CATEGORY_SLUGS } from '../../lib/utils';
+import NewsletterSignup from './NewsletterSignup';
 
 const FOOTER_CATEGORIES = [
   Category.startupsAndFunding,
-  Category.aiAndData,
-  Category.veterinaryTech,
-  Category.connectedDevices,
-  Category.marketTrends,
+  Category.newsAndViews,
   Category.interviews,
-  Category.videos,
+  Category.marketTrends,
 ];
 
 export default function Footer() {
@@ -20,11 +18,14 @@ export default function Footer() {
 
   return (
     <footer className="bg-foreground text-background/80 mt-16">
+      {/* Newsletter Signup */}
+      <NewsletterSignup />
+
       {/* Brand bar */}
       <div className="brand-gradient h-1 w-full" />
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-10">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-10">
           {/* Brand */}
           <div className="md:col-span-1">
             <Link to="/" className="inline-block mb-4">
@@ -57,6 +58,28 @@ export default function Footer() {
                   </Link>
                 </li>
               ))}
+            </ul>
+          </div>
+
+          {/* Company */}
+          <div>
+            <h4 className="text-xs font-semibold uppercase tracking-widest text-background/40 mb-4">Company</h4>
+            <ul className="space-y-2">
+              <li>
+                <Link to="/about" className="text-sm text-background/60 hover:text-background transition-colors">
+                  About
+                </Link>
+              </li>
+              <li>
+                <Link to="/contact" className="text-sm text-background/60 hover:text-background transition-colors">
+                  Contact
+                </Link>
+              </li>
+              <li>
+                <Link to="/contact" className="text-sm text-background/60 hover:text-background transition-colors">
+                  Advertise
+                </Link>
+              </li>
             </ul>
           </div>
 

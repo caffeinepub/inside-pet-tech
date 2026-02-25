@@ -1,12 +1,11 @@
 # Specification
 
 ## Summary
-**Goal:** Replace the homepage hero/video section with a generic featured article hero, expand the backend with full admin CRUD operations and role-based access control, and seed the backend with sample published articles.
+**Goal:** Add a "News & Views" category section to the homepage bottom sections so all four categories are displayed.
 
 **Planned changes:**
-- Replace the top hero/video section on the homepage with a featured article section that displays the most recent featured article of any content type (Article, Feature Story, Interview, or Video), showing its thumbnail, category tag, headline, summary, author, and published date in a large editorial layout
-- Implement full admin operations in the Motoko backend actor: create, update, delete, publish, and archive articles, all protected by admin principal checks
-- Add functions to add and remove admin principals, callable only by existing admins
-- Seed the backend with at least 6 published sample articles covering all six categories and all content types, with at least one article marked as featured
+- Add a "News & Views" category section to the homepage bottom sections, following the same layout and styling as the existing Startups & Funding, Interviews, and Market Trends sections
+- The section includes a header with a "More" link to the News & Views category page, and article cards showing thumbnail, category tag, headline, and date
+- If no published articles exist for News & Views, the section displays an empty/placeholder state consistent with the other sections
 
-**User-visible outcome:** The homepage hero section displays any featured article (not just videos), the backend supports all admin dashboard operations with access control enforced, and the site renders populated content on first load without manual admin action.
+**User-visible outcome:** The homepage now shows four category sections at the bottom — Startups & Funding, News & Views, Interviews, and Market Trends — all with consistent layout and styling.

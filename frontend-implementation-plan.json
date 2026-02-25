@@ -1,23 +1,23 @@
 {
   "kind": "implementation_plan",
   "version": "1.0",
-  "title": "Replace hero video section with featured article section & expand backend",
+  "title": "Add News & Views category section to homepage bottom sections",
   "requirements": [
     {
-      "id": "REQ-10",
-      "summary": "Replace the top hero/video section on the homepage with a generic featured article section that displays the most recent featured article regardless of content type in a large editorial hero layout",
+      "id": "REQ-22",
+      "summary": "Add a 'News & Views' category section to the homepage bottom sections alongside the existing Startups & Funding, Interviews, and Market Trends sections, following the same layout and styling",
       "acceptanceCriteria": [
-        "The top hero section on the homepage renders any featured article, not only video content types.",
-        "The hero section displays the featured article's thumbnail image, category tag, headline, summary, author, and date.",
-        "A published featured article of type Article, Feature Story, or Interview appears correctly in the hero section.",
-        "The section no longer forces or requires a video embed at the top of the homepage.",
-        "The layout remains large, prominent, and editorial in style consistent with the existing theme."
+        "The homepage displays four category sections at the bottom: Startups & Funding, News & Views, Interviews, and Market Trends.",
+        "The News & Views section renders published articles tagged with the 'News & Views' category.",
+        "The News & Views section includes a 'More' link that navigates to the News & Views category page.",
+        "The News & Views section matches the visual layout and styling of the other three category sections on the homepage.",
+        "If no published articles exist for News & Views, the section still appears with an appropriate empty or placeholder state consistent with the other sections."
       ],
       "file_operations": [
         {
           "path": "frontend/src/pages/HomePage.tsx",
           "operation": "modify",
-          "description": "Replace the existing hero section that filters for video content types with a new featured article hero section. Use the useFeaturedArticles hook to fetch featured articles and display the most recent one (first in the array). The hero section should render the article's thumbnail image using the existing thumbnailUrl field, display the category tag using the getCategoryLabel and getCategoryGradient utilities, show the headline (title), summary, author, and publishedAt date formatted with formatDate. Maintain the large editorial layout with the crimson-to-indigo gradient theme. Remove any video-specific filtering or embed logic from the top hero section. Link the entire hero section to the article detail page using the article's slug."
+          "description": "Add a fourth category section for 'News & Views' to the homepage bottom sections. Use the useArticlesByCategory query hook to fetch articles for Category.newsAndViews. Structure the section with a header row containing the category title and a 'More' link to '/category/news-and-views', followed by a grid of ArticleCard components in 'compact' variant. Place the News & Views section between the existing category sections, maintaining consistent spacing and layout. Ensure the section renders even when no articles are available, showing an appropriate empty state."
         }
       ]
     }

@@ -46,6 +46,23 @@ function ArticleGridSkeleton() {
   );
 }
 
+function CategorySpotlightSkeleton() {
+  return (
+    <div className="space-y-3 divide-y divide-border">
+      {[1, 2, 3].map((i) => (
+        <div key={i} className="pt-3 first:pt-0 flex gap-3">
+          <Skeleton className="w-20 h-14 rounded shrink-0" />
+          <div className="flex-1 space-y-2">
+            <Skeleton className="h-3 w-16" />
+            <Skeleton className="h-4 w-full" />
+            <Skeleton className="h-3 w-24" />
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
 interface FeaturedHeroProps {
   article: Article;
 }
@@ -132,9 +149,9 @@ function FeaturedHero({ article }: FeaturedHeroProps) {
 
 const FEATURED_CATEGORIES = [
   Category.startupsAndFunding,
-  Category.aiAndData,
-  Category.veterinaryTech,
-  Category.connectedDevices,
+  Category.newsAndViews,
+  Category.interviews,
+  Category.marketTrends,
 ];
 
 export default function HomePage() {
@@ -225,7 +242,6 @@ export default function HomePage() {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
           {FEATURED_CATEGORIES.map((cat) => {
             const catArticles = sortedArticles.filter((a) => a.category === cat).slice(0, 3);
-            if (catArticles.length === 0) return null;
             const gradientClass = CATEGORY_GRADIENT_CLASSES[cat];
             return (
               <div key={cat}>
@@ -246,13 +262,21 @@ export default function HomePage() {
                     More <ArrowRight size={12} />
                   </Link>
                 </div>
-                <div className="space-y-3 divide-y divide-border">
-                  {catArticles.map((article) => (
-                    <div key={article.id} className="pt-3 first:pt-0">
-                      <ArticleCard article={article} variant="compact" />
-                    </div>
-                  ))}
-                </div>
+                {isLoading ? (
+                  <CategorySpotlightSkeleton />
+                ) : catArticles.length > 0 ? (
+                  <div className="space-y-3 divide-y divide-border">
+                    {catArticles.map((article) => (
+                      <div key={article.id} className="pt-3 first:pt-0">
+                        <ArticleCard article={article} variant="compact" />
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="text-sm text-muted-foreground py-4 italic">
+                    No articles in this category yet.
+                  </p>
+                )}
               </div>
             );
           })}

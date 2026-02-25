@@ -29,42 +29,30 @@ export function formatDateShort(publishedAt?: bigint): string {
 
 export const CATEGORY_LABELS: Record<Category, string> = {
   [Category.startupsAndFunding]: 'Startups & Funding',
-  [Category.aiAndData]: 'AI & Data',
-  [Category.veterinaryTech]: 'Veterinary Tech',
-  [Category.connectedDevices]: 'Connected Devices',
-  [Category.marketTrends]: 'Market Trends',
+  [Category.newsAndViews]: 'News & Views',
   [Category.interviews]: 'Interviews',
-  [Category.videos]: 'Videos',
+  [Category.marketTrends]: 'Market Trends',
 };
 
 export const CATEGORY_SLUGS: Record<Category, string> = {
   [Category.startupsAndFunding]: 'startups-funding',
-  [Category.aiAndData]: 'ai-data',
-  [Category.veterinaryTech]: 'veterinary-tech',
-  [Category.connectedDevices]: 'connected-devices',
-  [Category.marketTrends]: 'market-trends',
+  [Category.newsAndViews]: 'news-and-views',
   [Category.interviews]: 'interviews',
-  [Category.videos]: 'videos',
+  [Category.marketTrends]: 'market-trends',
 };
 
 export const SLUG_TO_CATEGORY: Record<string, Category> = {
   'startups-funding': Category.startupsAndFunding,
-  'ai-data': Category.aiAndData,
-  'veterinary-tech': Category.veterinaryTech,
-  'connected-devices': Category.connectedDevices,
-  'market-trends': Category.marketTrends,
+  'news-and-views': Category.newsAndViews,
   'interviews': Category.interviews,
-  'videos': Category.videos,
+  'market-trends': Category.marketTrends,
 };
 
 export const CATEGORY_DESCRIPTORS: Record<Category, string> = {
   [Category.startupsAndFunding]: 'Emerging companies and investment activity reshaping pet care',
-  [Category.aiAndData]: 'Artificial intelligence and data platforms transforming animal health',
-  [Category.veterinaryTech]: 'Technology and workflow innovation in veterinary practice',
-  [Category.connectedDevices]: 'Smart collars, GPS trackers, and connected care platforms',
-  [Category.marketTrends]: 'Market analysis, operators, and category shifts in pet tech',
+  [Category.newsAndViews]: 'The latest news, opinions, and perspectives from across the pet tech industry',
   [Category.interviews]: 'Executive conversations and industry perspectives',
-  [Category.videos]: 'Video features, tours, and multimedia coverage',
+  [Category.marketTrends]: 'Market analysis, operators, and category shifts in pet tech',
 };
 
 export const CONTENT_TYPE_LABELS: Record<ContentType, string> = {
@@ -82,12 +70,9 @@ export const STATUS_LABELS: Record<ArticleStatus, string> = {
 
 export const CATEGORY_GRADIENT_CLASSES: Record<Category, string> = {
   [Category.startupsAndFunding]: 'from-rose-600 to-pink-700',
-  [Category.aiAndData]: 'from-violet-600 to-indigo-700',
-  [Category.veterinaryTech]: 'from-teal-600 to-cyan-700',
-  [Category.connectedDevices]: 'from-blue-600 to-indigo-700',
-  [Category.marketTrends]: 'from-amber-600 to-orange-700',
+  [Category.newsAndViews]: 'from-sky-600 to-blue-700',
   [Category.interviews]: 'from-purple-600 to-violet-700',
-  [Category.videos]: 'from-red-600 to-rose-700',
+  [Category.marketTrends]: 'from-amber-600 to-orange-700',
 };
 
 export function generateId(): string {

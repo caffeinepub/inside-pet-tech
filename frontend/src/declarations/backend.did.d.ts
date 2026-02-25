@@ -28,17 +28,18 @@ export interface Article {
 export type ArticleStatus = { 'published' : null } |
   { 'draft' : null } |
   { 'archived' : null };
-export type Category = { 'connectedDevices' : null } |
+export type Category = { 'newsAndViews' : null } |
   { 'marketTrends' : null } |
   { 'interviews' : null } |
-  { 'aiAndData' : null } |
-  { 'startupsAndFunding' : null } |
-  { 'veterinaryTech' : null } |
-  { 'videos' : null };
+  { 'startupsAndFunding' : null };
 export type ContentType = { 'video' : null } |
   { 'interview' : null } |
   { 'article' : null } |
   { 'featureStory' : null };
+export interface NewsletterSubscription {
+  'email' : string,
+  'timestamp' : bigint,
+}
 export interface UserProfile { 'bio' : string, 'name' : string }
 export type UserRole = { 'admin' : null } |
   { 'user' : null } |
@@ -71,10 +72,6 @@ export interface _SERVICE {
   >,
   '_caffeineStorageUpdateGatewayPrincipals' : ActorMethod<[], undefined>,
   '_initializeAccessControlWithSecret' : ActorMethod<[string], undefined>,
-  /**
-   * / Assign the #admin role to a principal.
-   * / AccessControl.assignRole already enforces that only admins can call this.
-   */
   'addAdminPrincipal' : ActorMethod<[Principal], undefined>,
   'archiveArticle' : ActorMethod<[string], undefined>,
   'assignCallerUserRole' : ActorMethod<[Principal, UserRole], undefined>,
@@ -84,6 +81,10 @@ export interface _SERVICE {
    * / Returns ALL articles (including drafts/archived) — admin only.
    */
   'getAllArticles' : ActorMethod<[], Array<Article>>,
+  'getAllNewsletterSubscribers' : ActorMethod<
+    [],
+    Array<NewsletterSubscription>
+  >,
   /**
    * / Returns a single article by id.
    * / Admins can see any status; others only see published.
@@ -110,16 +111,13 @@ export interface _SERVICE {
   'getUserProfile' : ActorMethod<[Principal], [] | [UserProfile]>,
   'isCallerAdmin' : ActorMethod<[], boolean>,
   'publishArticle' : ActorMethod<[string], undefined>,
-  /**
-   * / Demote a principal back to #guest.
-   * / AccessControl.assignRole already enforces that only admins can call this.
-   */
   'removeAdminPrincipal' : ActorMethod<[Principal], undefined>,
   'saveCallerUserProfile' : ActorMethod<[UserProfile], undefined>,
   /**
    * / Full-text search on title among published articles — public.
    */
   'searchArticlesByTitle' : ActorMethod<[string], Array<Article>>,
+  'subscribeToNewsletter' : ActorMethod<[string], undefined>,
   'updateArticle' : ActorMethod<[string, Article], undefined>,
 }
 export declare const idlService: IDL.ServiceClass;

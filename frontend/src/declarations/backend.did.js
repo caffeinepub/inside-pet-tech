@@ -36,13 +36,10 @@ export const ContentType = IDL.Variant({
   'featureStory' : IDL.Null,
 });
 export const Category = IDL.Variant({
-  'connectedDevices' : IDL.Null,
+  'newsAndViews' : IDL.Null,
   'marketTrends' : IDL.Null,
   'interviews' : IDL.Null,
-  'aiAndData' : IDL.Null,
   'startupsAndFunding' : IDL.Null,
-  'veterinaryTech' : IDL.Null,
-  'videos' : IDL.Null,
 });
 export const Article = IDL.Record({
   'id' : IDL.Text,
@@ -58,6 +55,10 @@ export const Article = IDL.Record({
   'summary' : IDL.Text,
   'category' : Category,
   'videoUrl' : IDL.Opt(IDL.Text),
+});
+export const NewsletterSubscription = IDL.Record({
+  'email' : IDL.Text,
+  'timestamp' : IDL.Int,
 });
 export const UserProfile = IDL.Record({ 'bio' : IDL.Text, 'name' : IDL.Text });
 
@@ -95,6 +96,11 @@ export const idlService = IDL.Service({
   'createArticle' : IDL.Func([Article], [], []),
   'deleteArticle' : IDL.Func([IDL.Text], [], []),
   'getAllArticles' : IDL.Func([], [IDL.Vec(Article)], ['query']),
+  'getAllNewsletterSubscribers' : IDL.Func(
+      [],
+      [IDL.Vec(NewsletterSubscription)],
+      ['query'],
+    ),
   'getArticleById' : IDL.Func([IDL.Text], [IDL.Opt(Article)], ['query']),
   'getArticlesByAuthor' : IDL.Func([IDL.Text], [IDL.Vec(Article)], ['query']),
   'getArticlesByCategory' : IDL.Func([Category], [IDL.Vec(Article)], ['query']),
@@ -112,6 +118,7 @@ export const idlService = IDL.Service({
   'removeAdminPrincipal' : IDL.Func([IDL.Principal], [], []),
   'saveCallerUserProfile' : IDL.Func([UserProfile], [], []),
   'searchArticlesByTitle' : IDL.Func([IDL.Text], [IDL.Vec(Article)], ['query']),
+  'subscribeToNewsletter' : IDL.Func([IDL.Text], [], []),
   'updateArticle' : IDL.Func([IDL.Text, Article], [], []),
 });
 
@@ -146,13 +153,10 @@ export const idlFactory = ({ IDL }) => {
     'featureStory' : IDL.Null,
   });
   const Category = IDL.Variant({
-    'connectedDevices' : IDL.Null,
+    'newsAndViews' : IDL.Null,
     'marketTrends' : IDL.Null,
     'interviews' : IDL.Null,
-    'aiAndData' : IDL.Null,
     'startupsAndFunding' : IDL.Null,
-    'veterinaryTech' : IDL.Null,
-    'videos' : IDL.Null,
   });
   const Article = IDL.Record({
     'id' : IDL.Text,
@@ -168,6 +172,10 @@ export const idlFactory = ({ IDL }) => {
     'summary' : IDL.Text,
     'category' : Category,
     'videoUrl' : IDL.Opt(IDL.Text),
+  });
+  const NewsletterSubscription = IDL.Record({
+    'email' : IDL.Text,
+    'timestamp' : IDL.Int,
   });
   const UserProfile = IDL.Record({ 'bio' : IDL.Text, 'name' : IDL.Text });
   
@@ -205,6 +213,11 @@ export const idlFactory = ({ IDL }) => {
     'createArticle' : IDL.Func([Article], [], []),
     'deleteArticle' : IDL.Func([IDL.Text], [], []),
     'getAllArticles' : IDL.Func([], [IDL.Vec(Article)], ['query']),
+    'getAllNewsletterSubscribers' : IDL.Func(
+        [],
+        [IDL.Vec(NewsletterSubscription)],
+        ['query'],
+      ),
     'getArticleById' : IDL.Func([IDL.Text], [IDL.Opt(Article)], ['query']),
     'getArticlesByAuthor' : IDL.Func([IDL.Text], [IDL.Vec(Article)], ['query']),
     'getArticlesByCategory' : IDL.Func(
@@ -230,6 +243,7 @@ export const idlFactory = ({ IDL }) => {
         [IDL.Vec(Article)],
         ['query'],
       ),
+    'subscribeToNewsletter' : IDL.Func([IDL.Text], [], []),
     'updateArticle' : IDL.Func([IDL.Text, Article], [], []),
   });
 };

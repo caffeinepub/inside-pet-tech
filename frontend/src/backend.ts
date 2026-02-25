@@ -89,10 +89,6 @@ export class ExternalBlob {
         return this;
     }
 }
-export interface _CaffeineStorageRefillResult {
-    success?: boolean;
-    topped_up_amount?: bigint;
-}
 export interface Article {
     id: string;
     status: ArticleStatus;
@@ -108,6 +104,10 @@ export interface Article {
     category: Category;
     videoUrl?: string;
 }
+export interface NewsletterSubscription {
+    email: string;
+    timestamp: bigint;
+}
 export interface _CaffeineStorageRefillInformation {
     proposed_top_up_amount?: bigint;
 }
@@ -119,19 +119,20 @@ export interface UserProfile {
     bio: string;
     name: string;
 }
+export interface _CaffeineStorageRefillResult {
+    success?: boolean;
+    topped_up_amount?: bigint;
+}
 export enum ArticleStatus {
     published = "published",
     draft = "draft",
     archived = "archived"
 }
 export enum Category {
-    connectedDevices = "connectedDevices",
+    newsAndViews = "newsAndViews",
     marketTrends = "marketTrends",
     interviews = "interviews",
-    aiAndData = "aiAndData",
-    startupsAndFunding = "startupsAndFunding",
-    veterinaryTech = "veterinaryTech",
-    videos = "videos"
+    startupsAndFunding = "startupsAndFunding"
 }
 export enum ContentType {
     video = "video",
@@ -152,10 +153,6 @@ export interface backendInterface {
     _caffeineStorageRefillCashier(refillInformation: _CaffeineStorageRefillInformation | null): Promise<_CaffeineStorageRefillResult>;
     _caffeineStorageUpdateGatewayPrincipals(): Promise<void>;
     _initializeAccessControlWithSecret(userSecret: string): Promise<void>;
-    /**
-     * / Assign the #admin role to a principal.
-     * / AccessControl.assignRole already enforces that only admins can call this.
-     */
     addAdminPrincipal(user: Principal): Promise<void>;
     archiveArticle(id: string): Promise<void>;
     assignCallerUserRole(user: Principal, role: UserRole): Promise<void>;
@@ -165,6 +162,7 @@ export interface backendInterface {
      * / Returns ALL articles (including drafts/archived) — admin only.
      */
     getAllArticles(): Promise<Array<Article>>;
+    getAllNewsletterSubscribers(): Promise<Array<NewsletterSubscription>>;
     /**
      * / Returns a single article by id.
      * / Admins can see any status; others only see published.
@@ -191,16 +189,13 @@ export interface backendInterface {
     getUserProfile(user: Principal): Promise<UserProfile | null>;
     isCallerAdmin(): Promise<boolean>;
     publishArticle(id: string): Promise<void>;
-    /**
-     * / Demote a principal back to #guest.
-     * / AccessControl.assignRole already enforces that only admins can call this.
-     */
     removeAdminPrincipal(user: Principal): Promise<void>;
     saveCallerUserProfile(profile: UserProfile): Promise<void>;
     /**
      * / Full-text search on title among published articles — public.
      */
     searchArticlesByTitle(searchTerm: string): Promise<Array<Article>>;
+    subscribeToNewsletter(email: string): Promise<void>;
     updateArticle(id: string, updatedArticle: Article): Promise<void>;
 }
 import type { Article as _Article, ArticleStatus as _ArticleStatus, Category as _Category, ContentType as _ContentType, UserProfile as _UserProfile, UserRole as _UserRole, _CaffeineStorageRefillInformation as __CaffeineStorageRefillInformation, _CaffeineStorageRefillResult as __CaffeineStorageRefillResult } from "./declarations/backend.did.d.ts";
@@ -388,6 +383,20 @@ export class Backend implements backendInterface {
             return from_candid_vec_n18(this._uploadFile, this._downloadFile, result);
         }
     }
+    async getAllNewsletterSubscribers(): Promise<Array<NewsletterSubscription>> {
+        if (this.processError) {
+            try {
+                const result = await this.actor.getAllNewsletterSubscribers();
+                return result;
+            } catch (e) {
+                this.processError(e);
+                throw new Error("unreachable");
+            }
+        } else {
+            const result = await this.actor.getAllNewsletterSubscribers();
+            return result;
+        }
+    }
     async getArticleById(arg0: string): Promise<Article | null> {
         if (this.processError) {
             try {
@@ -570,6 +579,20 @@ export class Backend implements backendInterface {
             return from_candid_vec_n18(this._uploadFile, this._downloadFile, result);
         }
     }
+    async subscribeToNewsletter(arg0: string): Promise<void> {
+        if (this.processError) {
+            try {
+                const result = await this.actor.subscribeToNewsletter(arg0);
+                return result;
+            } catch (e) {
+                this.processError(e);
+                throw new Error("unreachable");
+            }
+        } else {
+            const result = await this.actor.subscribeToNewsletter(arg0);
+            return result;
+        }
+    }
     async updateArticle(arg0: string, arg1: Article): Promise<void> {
         if (this.processError) {
             try {
@@ -699,21 +722,15 @@ function from_candid_variant_n24(_uploadFile: (file: ExternalBlob) => Promise<Ui
     return "video" in value ? ContentType.video : "interview" in value ? ContentType.interview : "article" in value ? ContentType.article : "featureStory" in value ? ContentType.featureStory : value;
 }
 function from_candid_variant_n27(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: {
-    connectedDevices: null;
+    newsAndViews: null;
 } | {
     marketTrends: null;
 } | {
     interviews: null;
 } | {
-    aiAndData: null;
-} | {
     startupsAndFunding: null;
-} | {
-    veterinaryTech: null;
-} | {
-    videos: null;
 }): Category {
-    return "connectedDevices" in value ? Category.connectedDevices : "marketTrends" in value ? Category.marketTrends : "interviews" in value ? Category.interviews : "aiAndData" in value ? Category.aiAndData : "startupsAndFunding" in value ? Category.startupsAndFunding : "veterinaryTech" in value ? Category.veterinaryTech : "videos" in value ? Category.videos : value;
+    return "newsAndViews" in value ? Category.newsAndViews : "marketTrends" in value ? Category.marketTrends : "interviews" in value ? Category.interviews : "startupsAndFunding" in value ? Category.startupsAndFunding : value;
 }
 function from_candid_variant_n32(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: {
     admin: null;
@@ -837,34 +854,22 @@ function to_candid_variant_n15(_uploadFile: (file: ExternalBlob) => Promise<Uint
     } : value;
 }
 function to_candid_variant_n17(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: Category): {
-    connectedDevices: null;
+    newsAndViews: null;
 } | {
     marketTrends: null;
 } | {
     interviews: null;
 } | {
-    aiAndData: null;
-} | {
     startupsAndFunding: null;
-} | {
-    veterinaryTech: null;
-} | {
-    videos: null;
 } {
-    return value == Category.connectedDevices ? {
-        connectedDevices: null
+    return value == Category.newsAndViews ? {
+        newsAndViews: null
     } : value == Category.marketTrends ? {
         marketTrends: null
     } : value == Category.interviews ? {
         interviews: null
-    } : value == Category.aiAndData ? {
-        aiAndData: null
     } : value == Category.startupsAndFunding ? {
         startupsAndFunding: null
-    } : value == Category.veterinaryTech ? {
-        veterinaryTech: null
-    } : value == Category.videos ? {
-        videos: null
     } : value;
 }
 function to_candid_variant_n9(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: UserRole): {

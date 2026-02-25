@@ -1,18 +1,18 @@
 {
   "kind": "coverage_report",
   "version": "1.0",
-  "generatedAt": "2026-02-25T12:45:38.914Z",
+  "generatedAt": "2026-02-25T16:33:02.005Z",
   "sources": {
     "buildRequest": true,
     "implementationPlan": true
   },
   "requirements": {
-    "total": 3,
+    "total": 1,
     "implemented": 1,
     "items": [
       {
-        "id": "REQ-10",
-        "summary": "Replace the top hero/video section on the homepage with a generic featured article section. Instead of only displaying video content types, it should display the most recent featured article regardless of content type (Article, Feature Story, Interview, or Video). The section should show the article's thumbnail image, category tag, headline, summary, author, and published date in a large editorial hero layout. If the featured article is of type Video, the thumbnail should still be used (no forced video embed at the top).",
+        "id": "REQ-22",
+        "summary": "Add a 'News & Views' category section to the homepage bottom sections so that all four categories — Startups & Funding, News & Views, Interviews, and Market Trends — are displayed. The News & Views section must follow the same layout and styling as the other three category sections (section header with 'More' link, article cards with thumbnail, category tag, headline, and date).",
         "status": "implemented",
         "plannedFiles": [
           "frontend/src/pages/HomePage.tsx"
@@ -20,26 +20,11 @@
         "matchedFiles": [
           "frontend/src/pages/HomePage.tsx"
         ]
-      },
-      {
-        "id": "REQ-11",
-        "summary": "Ensure the backend Motoko actor fully supports all admin operations required by the admin dashboard: create, update, delete, publish, and archive articles. Verify that role-based access control (admin principal checks) is enforced on all mutating operations. Expose a function to add and remove admin principals. All operations must be callable from the frontend via the generated actor interface.",
-        "status": "unknown",
-        "plannedFiles": [],
-        "matchedFiles": []
-      },
-      {
-        "id": "REQ-12",
-        "summary": "Seed the backend with at least 6 sample published articles spanning all categories (Startups & Funding, AI & Data, Veterinary Tech, Connected Devices, Market Trends, Interviews) and content types (Article, Feature Story, Interview, Video). At least one article must have the 'featured' flag set to true so the homepage hero section renders populated content on first load. Sample data should include realistic pet tech industry titles, summaries, authors, thumbnail URLs, and published timestamps.",
-        "status": "unknown",
-        "plannedFiles": [],
-        "matchedFiles": []
       }
     ]
   },
   "changedFiles": [
     "build-request.json",
-    "build-template/README.md",
     "feature_evidence.json",
     "frontend-file-summaries.txt",
     "frontend-implementation-plan.json",

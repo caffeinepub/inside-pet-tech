@@ -13,6 +13,8 @@ import Footer from './components/layout/Footer';
 import HomePage from './pages/HomePage';
 import CategoryPage from './pages/CategoryPage';
 import ArticleDetailPage from './pages/ArticleDetailPage';
+import AboutPage from './pages/AboutPage';
+import ContactPage from './pages/ContactPage';
 import AdminDashboard from './pages/admin/AdminDashboard';
 import ArticleEditor from './pages/admin/ArticleEditor';
 import AdminLayout from './pages/admin/AdminLayout';
@@ -57,6 +59,18 @@ const articleRoute = createRoute({
   component: ArticleDetailPage,
 });
 
+const aboutRoute = createRoute({
+  getParentRoute: () => publicLayoutRoute,
+  path: '/about',
+  component: AboutPage,
+});
+
+const contactRoute = createRoute({
+  getParentRoute: () => publicLayoutRoute,
+  path: '/contact',
+  component: ContactPage,
+});
+
 // Admin routes
 const adminLayoutRoute = createRoute({
   getParentRoute: () => rootRoute,
@@ -87,6 +101,8 @@ const routeTree = rootRoute.addChildren([
     homeRoute,
     categoryRoute,
     articleRoute,
+    aboutRoute,
+    contactRoute,
   ]),
   adminLayoutRoute.addChildren([
     adminDashboardRoute,
