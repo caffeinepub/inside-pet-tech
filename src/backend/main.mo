@@ -1,0 +1,340 @@
+import Map "mo:core/Map";
+import Array "mo:core/Array";
+import Text "mo:core/Text";
+import Runtime "mo:core/Runtime";
+import Time "mo:core/Time";
+import Principal "mo:core/Principal";
+import Iter "mo:core/Iter";
+import MixinAuthorization "authorization/MixinAuthorization";
+import AccessControl "authorization/access-control";
+import MixinStorage "blob-storage/Mixin";
+import Storage "blob-storage/Storage";
+import Migration "migration";
+
+(with migration = Migration.run)
+actor {
+  // ───────────────────────────────────────────────────────────────── Mixins ──
+  include MixinStorage();
+
+  // ─────────────────────────────────────────────── Access Control ────────────
+  let accessControlState = AccessControl.initState();
+  include MixinAuthorization(accessControlState);
+
+  // ───────────────────────────────────────────────────────────────── Types ───
+  public type Category = {
+    #startupsAndFunding;
+    #marketTrends;
+    #interviews;
+    #newsAndViews;
+  };
+
+  public type ContentType = {
+    #article;
+    #featureStory;
+    #interview;
+    #video;
+  };
+
+  public type ArticleStatus = {
+    #draft;
+    #published;
+    #archived;
+  };
+
+  public type Article = {
+    id : Text;
+    title : Text;
+    slug : Text;
+    summary : Text;
+    body : Text;
+    author : Text;
+    category : Category;
+    contentType : ContentType;
+    thumbnailUrl : Text;
+    videoUrl : ?Text;
+    publishedAt : ?Int;
+    status : ArticleStatus;
+    featured : Bool;
+  };
+
+  public type UserProfile = {
+    name : Text;
+    bio : Text;
+  };
+
+  public type NewsletterSubscription = {
+    email : Text;
+    timestamp : Int;
+  };
+
+  // ────────────────────────────────────────────────────────────── State ──────
+  let articles = Map.empty<Text, Article>();
+  let userProfiles = Map.empty<Principal, UserProfile>();
+  let newsletterSubscribers = Map.empty<Text, NewsletterSubscription>();
+
+  // ─────────────────────────────────────── First Admin Claim ─────────────────
+  public shared ({ caller }) func claimInitialAdmin() : async Bool {
+    // Anonymous callers can't become admin
+    if (caller.isAnonymous()) {
+      return false;
+    };
+
+    // Only allow it once
+    if (accessControlState.adminAssigned) {
+      return false;
+    };
+
+    // Set the caller as admin
+    accessControlState.userRoles.add(caller, #admin);
+    accessControlState.adminAssigned := true;
+    true;
+  };
+
+  // ─────────────────────────────────────── User Profile Functions ────────────
+
+  public query ({ caller }) func getCallerUserProfile() : async ?UserProfile {
+    // Return the profile if it exists, regardless of role
+    // Returns null if caller is not registered or has no profile
+    userProfiles.get(caller);
+  };
+
+  public shared ({ caller }) func saveCallerUserProfile(profile : UserProfile) : async () {
+    // Only authenticated (non-anonymous) users can save profiles
+    if (caller.isAnonymous()) {
+      Runtime.trap("Unauthorized: Anonymous users cannot save profiles");
+    };
+    userProfiles.add(caller, profile);
+  };
+
+  public query ({ caller }) func getUserProfile(user : Principal) : async ?UserProfile {
+    if (caller != user and not AccessControl.isAdmin(accessControlState, caller)) {
+      Runtime.trap("Unauthorized: Can only view your own profile");
+    };
+    userProfiles.get(user);
+  };
+
+  // ─────────────────────────────────────── Admin Role Management ─────────────
+
+  public shared ({ caller }) func addAdminPrincipal(user : Principal) : async () {
+    AccessControl.assignRole(accessControlState, caller, user, #admin);
+  };
+
+  public shared ({ caller }) func removeAdminPrincipal(user : Principal) : async () {
+    AccessControl.assignRole(accessControlState, caller, user, #guest);
+  };
+
+  // ─────────────────────────────────────── Article Write Operations ──────────
+
+  public shared ({ caller }) func createArticle(article : Article) : async () {
+    if (not AccessControl.hasPermission(accessControlState, caller, #admin)) {
+      Runtime.trap("Unauthorized: Only admins can create articles");
+    };
+    articles.add(article.id, article);
+  };
+
+  public shared ({ caller }) func updateArticle(id : Text, updatedArticle : Article) : async () {
+    if (not AccessControl.hasPermission(accessControlState, caller, #admin)) {
+      Runtime.trap("Unauthorized: Only admins can update articles");
+    };
+    if (not articles.containsKey(id)) {
+      Runtime.trap("Article not found: " # id);
+    };
+    articles.add(id, updatedArticle);
+  };
+
+  public shared ({ caller }) func deleteArticle(id : Text) : async () {
+    if (not AccessControl.hasPermission(accessControlState, caller, #admin)) {
+      Runtime.trap("Unauthorized: Only admins can delete articles");
+    };
+    if (not articles.containsKey(id)) {
+      Runtime.trap("Article not found: " # id);
+    };
+    articles.remove(id);
+  };
+
+  public shared ({ caller }) func publishArticle(id : Text) : async () {
+    if (not AccessControl.hasPermission(accessControlState, caller, #admin)) {
+      Runtime.trap("Unauthorized: Only admins can publish articles");
+    };
+    switch (articles.get(id)) {
+      case (?article) {
+        let updated : Article = {
+          article with
+          status = #published;
+          publishedAt = ?Time.now();
+        };
+        articles.add(id, updated);
+      };
+      case null { Runtime.trap("Article not found: " # id) };
+    };
+  };
+
+  public shared ({ caller }) func archiveArticle(id : Text) : async () {
+    if (not AccessControl.hasPermission(accessControlState, caller, #admin)) {
+      Runtime.trap("Unauthorized: Only admins can archive articles");
+    };
+    switch (articles.get(id)) {
+      case (?article) {
+        let updated : Article = { article with status = #archived };
+        articles.add(id, updated);
+      };
+      case null { Runtime.trap("Article not found: " # id) };
+    };
+  };
+
+  // ─────────────────────────────────────── Article Read Operations ───────────
+
+  /// Returns ALL articles (including drafts/archived) — admin only.
+  public query ({ caller }) func getAllArticles() : async [Article] {
+    if (not AccessControl.hasPermission(accessControlState, caller, #admin)) {
+      Runtime.trap("Unauthorized: Only admins can view all articles");
+    };
+    articles.values().toArray();
+  };
+
+  /// Returns only published articles — public.
+  public query func getPublishedArticles() : async [Article] {
+    articles.values().toArray().filter<Article>(
+      func(a) { a.status == #published },
+    );
+  };
+
+  /// Returns published articles in a given category — public.
+  public query func getArticlesByCategory(category : Category) : async [Article] {
+    articles.values().toArray().filter<Article>(
+      func(a) { a.category == category and a.status == #published },
+    );
+  };
+
+  /// Returns featured published articles — public.
+  public query func getFeaturedArticles() : async [Article] {
+    articles.values().toArray().filter<Article>(
+      func(a) { a.featured and a.status == #published },
+    );
+  };
+
+  /// Returns a single article by id.
+  /// Admins can see any status; others only see published.
+  public query ({ caller }) func getArticleById(id : Text) : async ?Article {
+    switch (articles.get(id)) {
+      case (?article) {
+        if (article.status == #published or AccessControl.isAdmin(accessControlState, caller)) {
+          ?article;
+        } else {
+          null;
+        };
+      };
+      case null { null };
+    };
+  };
+
+  /// Returns published articles by a given author — public.
+  public query func getArticlesByAuthor(author : Text) : async [Article] {
+    articles.values().toArray().filter<Article>(
+      func(a) { a.author == author and a.status == #published },
+    );
+  };
+
+  /// Full-text search on title among published articles — public.
+  public query func searchArticlesByTitle(searchTerm : Text) : async [Article] {
+    let lower = searchTerm.toLower();
+    articles.values().toArray().filter<Article>(
+      func(a) {
+        a.title.toLower().contains(#text lower) and a.status == #published
+      },
+    );
+  };
+
+  // ─────────────────────────────────────── Newsletter Signup (Public) ────────
+
+  public shared ({ caller }) func subscribeToNewsletter(email : Text) : async () {
+    // Public function - anyone including anonymous can subscribe
+    if (email.size() == 0 or not email.contains(#text "@")) {
+      Runtime.trap("Invalid email address");
+    };
+    let subscription : NewsletterSubscription = {
+      email;
+      timestamp = Time.now();
+    };
+    newsletterSubscribers.add(email, subscription);
+  };
+
+  public query ({ caller }) func getAllNewsletterSubscribers() : async [NewsletterSubscription] {
+    if (not AccessControl.hasPermission(accessControlState, caller, #admin)) {
+      Runtime.trap("Unauthorized: Only admins can view subscribers");
+    };
+    newsletterSubscribers.values().toArray();
+  };
+
+  // ─────────────────────────────────────── Seed Data ─────────────────────────
+
+  let sampleArticles : [Article] = [
+    {
+      id = "1";
+      title = "Innovating Pet Startups";
+      slug = "innovating-pet-startups";
+      summary = "A look at the latest pet tech startups reshaping the industry.";
+      body = "<p>This article explores the newest wave of pet-focused startups that are attracting significant venture capital and disrupting traditional markets.</p>";
+      author = "Jane Smith";
+      category = #startupsAndFunding;
+      contentType = #article;
+      thumbnailUrl = "https://images.unsplash.com/photo-1587300003388-59208cc962cb?w=800";
+      videoUrl = null;
+      publishedAt = ?1_700_000_000_000_000_000;
+      status = #published;
+      featured = true;
+    },
+    {
+      id = "2";
+      title = "Vet Tech Startup Interview";
+      slug = "vet-tech-startup-interview";
+      summary = "Exclusive interview with the CEO of PetTech on the future of animal healthcare.";
+      body = "<p>We sat down with the founder of one of the fastest-growing veterinary technology companies to discuss innovation, funding, and the road ahead.</p>";
+      author = "David Kim";
+      category = #interviews;
+      contentType = #interview;
+      thumbnailUrl = "https://images.unsplash.com/photo-1559839734-2b71ea197ec2?w=800";
+      videoUrl = ?"https://example.com/video1.mp4";
+      publishedAt = ?1_700_300_000_000_000_000;
+      status = #published;
+      featured = false;
+    },
+    {
+      id = "3";
+      title = "Market Trends in Pet Tech 2024";
+      slug = "market-trends-pet-tech-2024";
+      summary = "Analyzing the explosive growth of the global pet technology market.";
+      body = "<p>Market analysts predict the pet technology sector will exceed $20 billion by 2026, driven by increased pet ownership and demand for connected devices.</p>";
+      author = "Emily Chen";
+      category = #marketTrends;
+      contentType = #article;
+      thumbnailUrl = "https://images.unsplash.com/photo-1611532736597-de2d4265fba3?w=800";
+      videoUrl = null;
+      publishedAt = ?1_700_400_000_000_000_000;
+      status = #published;
+      featured = false;
+    },
+    {
+      id = "4";
+      title = "News & Views Feature";
+      slug = "news-views-feature";
+      summary = "A comprehensive overview of recent developments and opinions in the pet tech industry.";
+      body = "<p>This feature covers the latest news and expert viewpoints shaping the future of pet technology.</p>";
+      author = "Kelly Brown";
+      category = #newsAndViews;
+      contentType = #article;
+      thumbnailUrl = "https://images.unsplash.com/photo-1601758124510-52d02ddb7cbd?w=800";
+      videoUrl = null;
+      publishedAt = ?1_700_550_000_000_000_000;
+      status = #published;
+      featured = true;
+    },
+  ];
+
+  // Seed articles if the map is empty (for converted deployments).
+  if (articles.size() == 0) {
+    for (article in sampleArticles.vals()) {
+      articles.add(article.id, article);
+    };
+  };
+};
