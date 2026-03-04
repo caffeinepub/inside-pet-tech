@@ -20,7 +20,7 @@ export default function Navbar() {
           {/* Logo */}
           <Link to="/" className="flex items-center shrink-0">
             <img
-              src="/assets/generated/inside-pet-tech-logo.dim_400x480.png"
+              src="/assets/1000034567.jpg"
               alt="Inside Pet Tech"
               className="h-10 w-auto object-contain"
             />
