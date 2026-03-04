@@ -1,6 +1,7 @@
 import { Link } from "@tanstack/react-router";
 import { Menu, X } from "lucide-react";
 import { useState } from "react";
+const logoSrc = new URL("/assets/1000034567.jpg", import.meta.url).href;
 
 const categories = [
   { label: "Startups & Funding", slug: "startups-and-funding" },
@@ -20,7 +21,7 @@ export default function Navbar() {
           {/* Logo */}
           <Link to="/" className="flex items-center shrink-0">
             <img
-              src="/assets/1000034567.jpg"
+              src={logoSrc}
               alt="Inside Pet Tech"
               className="h-10 w-auto object-contain"
             />
