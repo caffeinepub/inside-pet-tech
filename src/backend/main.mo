@@ -16,9 +16,37 @@ actor {
   // ───────────────────────────────────────────────────────────────── Mixins ──
   include MixinStorage();
 
-  // ─────────────────────────────────────────────── Access Control ────────────
+  // ─────────────────────────────────────── Access Control ────────────────────
   let accessControlState = AccessControl.initState();
   include MixinAuthorization(accessControlState);
+
+  // ─────────────────────────────────── Stable Admin Persistence ──────────────
+  // These stable vars survive canister upgrades/redeployments.
+  // The admin principal is restored into accessControlState after every upgrade.
+  stable var stableAdminPrincipal : ?Principal = null;
+  stable var stableAdminAssigned : Bool = false;
+
+  // Restore admin role into the in-memory map after every upgrade
+  system func postupgrade() {
+    switch (stableAdminPrincipal) {
+      case (?p) {
+        accessControlState.userRoles.add(p, #admin);
+        accessControlState.adminAssigned := true;
+      };
+      case null {};
+    };
+  };
+
+  // On first load, restore from stable vars (covers the initial install case)
+  if (stableAdminAssigned) {
+    switch (stableAdminPrincipal) {
+      case (?p) {
+        accessControlState.userRoles.add(p, #admin);
+        accessControlState.adminAssigned := true;
+      };
+      case null {};
+    };
+  };
 
   // ───────────────────────────────────────────────────────────────── Types ───
   public type Category = {
@@ -79,12 +107,14 @@ actor {
       return false;
     };
 
-    // Only allow it once
-    if (accessControlState.adminAssigned) {
+    // Only allow it once (check both stable and in-memory)
+    if (stableAdminAssigned or accessControlState.adminAssigned) {
       return false;
     };
 
-    // Set the caller as admin
+    // Set the caller as admin — both stable (survives upgrades) and in-memory
+    stableAdminPrincipal := ?caller;
+    stableAdminAssigned := true;
     accessControlState.userRoles.add(caller, #admin);
     accessControlState.adminAssigned := true;
     true;
@@ -93,13 +123,10 @@ actor {
   // ─────────────────────────────────────── User Profile Functions ────────────
 
   public query ({ caller }) func getCallerUserProfile() : async ?UserProfile {
-    // Return the profile if it exists, regardless of role
-    // Returns null if caller is not registered or has no profile
     userProfiles.get(caller);
   };
 
   public shared ({ caller }) func saveCallerUserProfile(profile : UserProfile) : async () {
-    // Only authenticated (non-anonymous) users can save profiles
     if (caller.isAnonymous()) {
       Runtime.trap("Unauthorized: Anonymous users cannot save profiles");
     };
@@ -184,7 +211,6 @@ actor {
 
   // ─────────────────────────────────────── Article Read Operations ───────────
 
-  /// Returns ALL articles (including drafts/archived) — admin only.
   public query ({ caller }) func getAllArticles() : async [Article] {
     if (not AccessControl.hasPermission(accessControlState, caller, #admin)) {
       Runtime.trap("Unauthorized: Only admins can view all articles");
@@ -192,29 +218,24 @@ actor {
     articles.values().toArray();
   };
 
-  /// Returns only published articles — public.
   public query func getPublishedArticles() : async [Article] {
     articles.values().toArray().filter<Article>(
       func(a) { a.status == #published },
     );
   };
 
-  /// Returns published articles in a given category — public.
   public query func getArticlesByCategory(category : Category) : async [Article] {
     articles.values().toArray().filter<Article>(
       func(a) { a.category == category and a.status == #published },
     );
   };
 
-  /// Returns featured published articles — public.
   public query func getFeaturedArticles() : async [Article] {
     articles.values().toArray().filter<Article>(
       func(a) { a.featured and a.status == #published },
     );
   };
 
-  /// Returns a single article by id.
-  /// Admins can see any status; others only see published.
   public query ({ caller }) func getArticleById(id : Text) : async ?Article {
     switch (articles.get(id)) {
       case (?article) {
@@ -228,14 +249,12 @@ actor {
     };
   };
 
-  /// Returns published articles by a given author — public.
   public query func getArticlesByAuthor(author : Text) : async [Article] {
     articles.values().toArray().filter<Article>(
       func(a) { a.author == author and a.status == #published },
     );
   };
 
-  /// Full-text search on title among published articles — public.
   public query func searchArticlesByTitle(searchTerm : Text) : async [Article] {
     let lower = searchTerm.toLower();
     articles.values().toArray().filter<Article>(
@@ -248,7 +267,6 @@ actor {
   // ─────────────────────────────────────── Newsletter Signup (Public) ────────
 
   public shared ({ caller }) func subscribeToNewsletter(email : Text) : async () {
-    // Public function - anyone including anonymous can subscribe
     if (email.size() == 0 or not email.contains(#text "@")) {
       Runtime.trap("Invalid email address");
     };
@@ -331,7 +349,6 @@ actor {
     },
   ];
 
-  // Seed articles if the map is empty (for converted deployments).
   if (articles.size() == 0) {
     for (article in sampleArticles.vals()) {
       articles.add(article.id, article);

@@ -1,19 +1,37 @@
-# Specification
+# Inside Pet Tech
 
-## Summary
-**Goal:** Rebuild the entire public-facing frontend to match the Version 3 design exactly, while preserving the current post-Version-7 footer, and ensuring the backend remains fully intact and compatible.
+## Current State
+The admin article editor (`ArticleEditor.tsx`) uses:
+- A plain `<Textarea>` for article body (raw HTML)
+- A URL text input for thumbnail image
+- A single "Save" button that saves with the current status (draft by default)
+- No distinct "Save as Draft" vs "Publish" actions
 
-**Planned changes:**
-- Rebuild the top navigation bar with the Inside Pet Tech logo and four category links (Startups & Funding, News & Views, Interviews, Market Trends), with no admin or sign-in links visible
-- Rebuild the homepage hero/featured article section showing the most recent featured article in a large editorial layout (thumbnail, category tag, headline, summary, author, published date)
-- Rebuild the Latest News grid showing recent published articles with thumbnail, category tag, headline, summary, author, and date
-- Rebuild all four category spotlight sections on the homepage with article cards
-- Rebuild the About page at /about with Version 3 content and styling
-- Rebuild the Contact page at /contact with Version 3 content, contact form, and advertising opportunities mention
-- Rebuild the article detail page (headline, author, date, category tag, content type badge, hero image or video embed, full body, related articles)
-- Rebuild category listing pages for all four categories
-- Apply Version 3 typography (Playfair Display headlines, Inter body), color scheme (deep crimson-to-indigo gradient accents, off-white/light-gray background, dark near-black text), spacing, and layout throughout
-- Preserve the current footer with functional newsletter signup (wired to subscribeToNewsletter), About/Contact links, all four category links, tagline "Covering the Companies, Technology, and Ideas Reshaping Pet Care", site description, and caffeine.ai attribution badge
-- Ensure backend Motoko actor retains all existing endpoints and seeded sample articles
+## Requested Changes (Diff)
 
-**User-visible outcome:** Visitors see the full Version 3 site design with all pages, article content, and category sections intact, plus the current footer with newsletter signup and attribution, and the backend fully operational with populated sample content.
+### Add
+- Rich text WYSIWYG editor for the article body (using Tiptap) with toolbar: Bold, Italic, Underline, Strikethrough, Headings (H1/H2/H3), Bullet list, Ordered list, Blockquote, Link insertion, Image insertion from URL, Horizontal rule, Undo/Redo
+- Direct image upload for the article thumbnail using blob-storage (file picker → upload → URL stored in form)
+- "Save as Draft" button (saves with status=draft) and "Publish" button (saves with status=published) replacing the single "Save" button
+- Word count / character count display below the editor
+- Auto-save indicator (shows "Unsaved changes" when form is dirty)
+
+### Modify
+- Replace the plain textarea body field with the Tiptap rich text editor
+- Replace the thumbnail URL input with an upload button + preview (still accepts URL as fallback)
+- Replace single Save button with "Save Draft" and "Publish" split-action buttons
+- The body field stores HTML output from Tiptap (compatible with existing article.body field)
+
+### Remove
+- Plain `<Textarea>` for body
+- Raw HTML placeholder text in body field
+
+## Implementation Plan
+1. Install Tiptap packages: `@tiptap/react`, `@tiptap/starter-kit`, `@tiptap/extension-underline`, `@tiptap/extension-link`, `@tiptap/extension-image`, `@tiptap/extension-character-count`
+2. Create `src/frontend/src/components/editor/RichTextEditor.tsx` with Tiptap editor + toolbar
+3. Update `ArticleEditor.tsx`:
+   - Replace textarea body with `<RichTextEditor>`
+   - Replace thumbnail URL input with upload button using blob-storage `useUploadBlob` hook + URL fallback input
+   - Replace single Save button with "Save Draft" and "Publish" buttons, each calling handleSubmit with the appropriate status override
+   - Show unsaved changes indicator
+4. No backend changes needed (body field is already HTML text)

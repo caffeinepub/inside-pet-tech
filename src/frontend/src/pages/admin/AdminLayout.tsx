@@ -21,7 +21,8 @@ import {
   useIsCallerAdmin,
 } from "../../hooks/useQueries";
 
-const ACTOR_TIMEOUT_MS = 8_000;
+const ACTOR_TIMEOUT_MS = 45_000;
+const AUTO_RETRY_INTERVAL_MS = 5_000;
 
 export default function AdminLayout() {
   const { identity, clear, loginStatus, login } = useInternetIdentity();
@@ -32,11 +33,7 @@ export default function AdminLayout() {
   const isAuthenticated = !!identity;
   const isLoggingIn = loginStatus === "logging-in";
 
-  const {
-    data: isAdmin,
-    isLoading: adminLoading,
-    refetch: refetchAdmin,
-  } = useIsCallerAdmin();
+  const { data: isAdmin, isLoading: adminLoading } = useIsCallerAdmin();
 
   const {
     data: userProfile,
@@ -46,13 +43,18 @@ export default function AdminLayout() {
 
   const claimMutation = useClaimInitialAdmin();
 
-  // Local claiming state — controls the "Verifying..." spinner after claim
   const [claiming, setClaiming] = useState(false);
   const [claimFailed, setClaimFailed] = useState(false);
 
   // Actor timeout: if authenticated but actor never arrives within ACTOR_TIMEOUT_MS, show refresh
   const [actorTimedOut, setActorTimedOut] = useState(false);
   const actorTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  // Auto-retry countdown
+  const [retryCountdown, setRetryCountdown] = useState(
+    AUTO_RETRY_INTERVAL_MS / 1000,
+  );
+  const retryIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   useEffect(() => {
     if (isAuthenticated && !actor && !actorTimedOut) {
@@ -71,6 +73,30 @@ export default function AdminLayout() {
       if (actorTimeoutRef.current) clearTimeout(actorTimeoutRef.current);
     };
   }, [isAuthenticated, actor, actorTimedOut]);
+
+  // Start auto-retry countdown when timed out
+  useEffect(() => {
+    if (actorTimedOut) {
+      setRetryCountdown(AUTO_RETRY_INTERVAL_MS / 1000);
+      retryIntervalRef.current = setInterval(() => {
+        setRetryCountdown((prev) => {
+          if (prev <= 1) {
+            window.location.reload();
+            return 0;
+          }
+          return prev - 1;
+        });
+      }, 1000);
+    } else {
+      if (retryIntervalRef.current) {
+        clearInterval(retryIntervalRef.current);
+        retryIntervalRef.current = null;
+      }
+    }
+    return () => {
+      if (retryIntervalRef.current) clearInterval(retryIntervalRef.current);
+    };
+  }, [actorTimedOut]);
 
   const handleLogin = async () => {
     try {
@@ -94,34 +120,19 @@ export default function AdminLayout() {
     setClaiming(true);
     setClaimFailed(false);
     try {
-      await claimMutation.mutateAsync();
-      toast.success("Admin access claimed! Verifying…");
+      const result = await claimMutation.mutateAsync();
+      if (result) {
+        // Claim succeeded — reload the page to pick up the new admin role fresh
+        window.location.reload();
+        return;
+      }
+      // Claim returned false (already assigned to someone else)
+      toast.error("Admin access has already been claimed by another account.");
+      setClaiming(false);
     } catch (err: unknown) {
       const error = err as Error;
       toast.error(`Failed to claim admin: ${error.message}`);
       setClaiming(false);
-      return;
-    }
-
-    // Retry refetchAdmin up to 10 times with 2s delays (20s total max)
-    let verified = false;
-    for (let attempt = 0; attempt < 10; attempt++) {
-      await new Promise((res) => setTimeout(res, 2000));
-      try {
-        await queryClient.invalidateQueries({ queryKey: ["isCallerAdmin"] });
-        const result = await refetchAdmin();
-        if (result.data === true) {
-          verified = true;
-          break;
-        }
-      } catch {
-        // continue retrying
-      }
-    }
-
-    setClaiming(false);
-    if (!verified) {
-      setClaimFailed(true);
     }
   };
 
@@ -172,11 +183,14 @@ export default function AdminLayout() {
           <div className="max-w-md w-full mx-auto p-8 text-center">
             <AlertCircle className="w-12 h-12 text-amber-500 mx-auto mb-4" />
             <h2 className="font-display text-xl font-bold text-foreground mb-3">
-              Connection Timeout
+              Taking a moment to connect...
             </h2>
             <p className="text-muted-foreground mb-6">
-              Unable to connect to the backend. Please refresh the page and try
-              again.
+              The server is warming up. The page will automatically retry
+              shortly — no action needed.
+            </p>
+            <p className="text-sm text-amber-600 font-medium mb-6">
+              Auto-retrying in {retryCountdown}s...
             </p>
             <Button
               data-ocid="admin.secondary_button"
@@ -218,7 +232,7 @@ export default function AdminLayout() {
       <div className="min-h-screen flex items-center justify-center bg-background">
         <div className="text-center" data-ocid="admin.loading_state">
           <Loader2 className="w-8 h-8 animate-spin text-crimson-600 mx-auto mb-4" />
-          <p className="text-muted-foreground">Verifying admin access…</p>
+          <p className="text-muted-foreground">Claiming admin access…</p>
         </div>
       </div>
     );

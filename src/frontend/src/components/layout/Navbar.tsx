@@ -1,7 +1,8 @@
 import { Link } from "@tanstack/react-router";
 import { Menu, X } from "lucide-react";
 import { useState } from "react";
-const logoSrc = new URL("/assets/1000034567.jpg", import.meta.url).href;
+const logoSrc = new URL("/assets/uploads/1000034567-1-1.jpg", import.meta.url)
+  .href;
 
 const categories = [
   { label: "Startups & Funding", slug: "startups-and-funding" },
